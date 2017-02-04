@@ -38,6 +38,12 @@ This project uses Yarn for package management and Webpack for building. Both of 
 
 **Please don't use npm.** Yarn gives us deterministic builds, and is much faster for you.
 
+First, install all of the projects dependencies. You will have to do this whenever someone else adds new dependencies, as well
+
+```
+yarn
+```
+
 When you want to develop, simply start the `serve` script.
 
 ```
