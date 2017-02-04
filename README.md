@@ -16,7 +16,7 @@ With Git installed, clone your fork, and configure the repository
 
 ```
 git clone https://github.com/<<YOUR USERNAME>>/project-papa-client
-cd project-papa
+cd project-papa-client
 git remote add upstream https://github.com/project-papa/project-papa-client
 ```
 
