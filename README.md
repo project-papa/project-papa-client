@@ -64,6 +64,25 @@ in your editor.
 
 [Visual Studio Code](https://code.visualstudio.com/) with the [TSLint extension](https://marketplace.visualstudio.com/items?itemName=eg2.tslint) is recommended. However, there are plugins/extensions for other editors.
 
+### Testing
+
+We aim for 100% test coverage for new code (but this is not mandatory). You can run the tests for the project with
+
+```
+yarn test
+```
+
+To just test a particular file, you can pass in a test string
+
+```
+yarn text mycoollib.ts
+```
+
+Tests live in a `__tests__` directory which is in the same directory as the file it is testing. This keeps tests close
+to the code they're testing.
+
+We use [Jest](https://facebook.github.io/jest/) for testing, you can read up on all the ins and outs on their website.
+
 ### Making Changes
 
 To make changes, you want to check out a new branch
