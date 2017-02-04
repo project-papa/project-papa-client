@@ -6,7 +6,8 @@
     "build": "webpack",
     "serve": "webpack-dev-server",
     "lint": "tslint 'src/**/*.ts?(x)'",
-    "testall": "yarn lint && yarn build"
+    "test": "jest",
+    "testall": "yarn lint && yarn build && yarn test"
   },
   "repository": {
     "url": "https://github.com/project-papa/project-papa-client",
@@ -15,12 +16,26 @@
   "author": "Group Papa",
   "license": "MIT",
   "dependencies": {
+    "@types/jest": "^18.1.1",
     "html-webpack-plugin": "^2.28.0",
+    "jest": "^18.1.0",
+    "ts-jest": "^18.0.2",
     "ts-loader": "^2.0.0",
     "tslint": "^4.4.2",
     "tslint-config-xo": "^1.1.0",
     "typescript": "^2.1.5",
     "webpack": "^2.2.1",
     "webpack-dev-server": "^2.3.0"
+  },
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ]
   }
 }
