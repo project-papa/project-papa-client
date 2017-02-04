@@ -1,0 +1,26 @@
+{
+  "name": "project-papa-client",
+  "version": "0.0.0",
+  "main": "src/main.ts",
+  "scripts": {
+    "build": "webpack",
+    "serve": "webpack-dev-server",
+    "lint": "tslint 'src/**/*.ts?(x)'",
+    "testall": "yarn lint && yarn build"
+  },
+  "repository": {
+    "url": "https://github.com/project-papa/project-papa-client",
+    "type": "git"
+  },
+  "author": "Group Papa",
+  "license": "MIT",
+  "dependencies": {
+    "html-webpack-plugin": "^2.28.0",
+    "ts-loader": "^2.0.0",
+    "tslint": "^4.4.2",
+    "tslint-config-xo": "^1.1.0",
+    "typescript": "^2.1.5",
+    "webpack": "^2.2.1",
+    "webpack-dev-server": "^2.3.0"
+  }
+}
