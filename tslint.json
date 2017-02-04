@@ -1,0 +1,11 @@
+{
+  "extends": "tslint-config-xo/esnext",
+  "rules": {
+    "ter-indent": [true, 2],
+    "indent": [true],
+    "trailing-comma": [true, { "multiline": "always", "singleline": "never" }],
+    "object-curly-spacing": [true, "always"],
+    "dot-notation": false,
+    "no-shadowed-variable": false
+  }
+}
