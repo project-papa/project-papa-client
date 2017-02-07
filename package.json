@@ -15,7 +15,9 @@
   "author": "Group Papa",
   "license": "MIT",
   "dependencies": {
+    "@types/three": "^0.83.1",
     "html-webpack-plugin": "^2.28.0",
+    "three": "^0.84.0",
     "ts-loader": "^2.0.0",
     "tslint": "^4.4.2",
     "tslint-config-xo": "^1.1.0",
