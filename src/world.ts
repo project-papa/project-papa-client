@@ -45,9 +45,8 @@ export class World {
   }*/
 
   // Render world:
-  render = function () {
+  render = () => {
     requestAnimationFrame( this.render );
     this.renderer.render(this.scene, this.camera);
-  };
-
+  }
 }
