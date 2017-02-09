@@ -6,6 +6,7 @@
     "trailing-comma": [true, { "multiline": "always", "singleline": "never" }],
     "object-curly-spacing": [true, "always"],
     "dot-notation": false,
-    "no-shadowed-variable": false
+    "no-shadowed-variable": false,
+    "only-arrow-functions": [true, "allow-declarations"]
   }
 }
