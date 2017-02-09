@@ -7,6 +7,16 @@
     "object-curly-spacing": [true, "always"],
     "dot-notation": false,
     "no-shadowed-variable": false,
-    "only-arrow-functions": [true, "allow-declarations"]
+    "only-arrow-functions": [true, "allow-declarations"],
+    "no-consecutive-blank-lines": [true],
+    "ter-max-len": [
+      true,
+      100,
+      {
+        "ignoreTemplateLiterals": true,
+        "ignoreImports": true,
+        "ignoreUrls": true
+      }
+    ]
   }
 }
