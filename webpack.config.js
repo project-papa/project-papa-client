@@ -30,5 +30,7 @@ module.exports = {
       src: path.resolve('src'),
     },
   },
-  plugins: [new HtmlWebpackPlugin()]
-}
+  plugins: [new HtmlWebpackPlugin({
+    template: path.resolve('index.template.ejs'),
+  })],
+};
