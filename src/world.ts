@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-/* Uncomment once shape.ts exists:
-import { Shape } from 'src/shape.ts';*/
+import { Shape } from 'src/shape';
 
 export class World {
 
@@ -13,8 +12,7 @@ export class World {
 
   // Each World will also keep track of what shapes are currently in it:
   // NOTE: This is a private member.
-  /* Uncomment once shape.ts exists:
-  private shapes : Array<Shape>;*/
+  private shapes : Array<Shape>;
 
   constructor() {
 
@@ -36,13 +34,12 @@ export class World {
   // Public methods:
 
   // Add shape to world:
-  /* Uncomment once shape.ts exists:
   addShape (shape : Shape) {
     // First add to scene:
-    this.scene.add(Shape);
+    this.scene.add(shape.mesh);
     // Then add to shapes array:
-    this.shapes.push(Shape);
-  }*/
+    this.shapes.push(shape);
+  }
 
   // Render world:
   render = () => {
