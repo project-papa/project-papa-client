@@ -18,7 +18,7 @@ export class Sphere implements Shape {
   readonly material : THREE.Material;
   readonly mesh : THREE.Mesh;
 
-  constructor(pos : THREE.Vector3, geo : THREE.SphereGeometry, mat : THREE.Material) {
+  constructor(geo : THREE.SphereGeometry, mat : THREE.Material) {
     this.geometry = geo;
     this.material = mat;
 
