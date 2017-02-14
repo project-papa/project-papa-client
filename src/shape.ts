@@ -37,7 +37,7 @@ export class Box implements Shape {
   readonly material : THREE.Material;
   readonly mesh : THREE.Mesh;
 
-  constructor(pos : THREE.Vector3, geo : THREE.BoxGeometry, mat : THREE.Material) {
+  constructor(geo : THREE.BoxGeometry, mat : THREE.Material) {
     this.geometry = geo;
     this.material = mat;
 
