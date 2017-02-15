@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title><%= htmlWebpackPlugin.options.title %></title>
+  </head>
+  <body>
+    <!--
+      We have to set some config for our WebVR polyfill */ -%>
+      As it configures itself on load, we have to do this _before_ loading our script
+    -->
+    <script>
+      window.WebVRConfig = {
+        DEFER_INITIALIZATION: false,
+        ALWAYS_APPEND_POLYFILL_DISPLAY: true,
+        DIRTY_SUBMIT_FRAME_BINDINGS: true,
+        BUFFER_SCALE: 1,
+      };
+    </script>
+  </body>
+</html>

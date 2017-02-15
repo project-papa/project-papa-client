@@ -1,3 +1,4 @@
 import { add } from 'src/lib';
+import { World } from './world';
 
-console.log(`5 + 7 is ${add(5, 7)}`);
+(new World()).start();
