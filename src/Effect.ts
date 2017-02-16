@@ -1,4 +1,4 @@
-import LiveLoop from 'src/LiveLoop';
+import LiveLoop from './LiveLoop';
 
 export default class Effect {
 
@@ -36,7 +36,6 @@ export default class Effect {
     this.generateAndPushRuby();
 
   }
-
 
   /*
    * Generates the initialisation string of an effect, which can be placed at

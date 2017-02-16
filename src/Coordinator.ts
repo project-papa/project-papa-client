@@ -114,7 +114,6 @@ export default class Coordinator {
         this.outputRuby = this.outputRuby + liveLoop.getRuby() + '\n';
       }
     }
-
   }
 
 }

@@ -1,5 +1,5 @@
-import Effect from 'src/Effect';
-import Coordinator from 'src/Coordinator';
+import Effect from './Effect';
+import Coordinator from './Coordinator';
 
 
 export default class LiveLoop {
@@ -131,7 +131,5 @@ export default class LiveLoop {
     this.generateRuby();
     this.parentCoord.generateRuby();
   }
-
-
 
 }
