@@ -60,7 +60,7 @@ export class World {
   /**
    * Add live loop (by name) to the world.
    */
-  addLiveloop(name: string) {
+  addLiveLoop(name: string) {
     /**
      * TODO: Call addLiveloop function (from Rowan's code) to get liveloop ID
      * and to update music.
@@ -75,7 +75,7 @@ export class World {
   /**
    * Remove live loop (by ID) from the world.
    */
-  removeLiveloop(id: number) {
+  removeLiveLoop(id: number) {
     // Remove from liveloops:
     delete this.liveloops[id];
     // Remove from effects:
