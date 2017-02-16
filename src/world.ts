@@ -119,31 +119,32 @@ export class World {
   setupEnvironment() {
     // Set a background colour
     this.scene.background = new THREE.Color(0xff9dc6);
-    
-    // Add a wireframe grid helper to the scene 
-    // For debug purposes 
-    let gridHelper = new THREE.GridHelper( 150, 150 );
-    gridHelper.position.set(0,-2,0);
+
+    // Add a wireframe grid helper to the scene
+    // For debug purposes
+    const gridHelper = new THREE.GridHelper(150, 150);
+    gridHelper.position.set(0, -2, 0);
     this.scene.add(gridHelper);
 
     // Add ambient light
-    let ambientLight = new THREE.AmbientLight( 0x808080 ); // soft white light
+    const ambientLight = new THREE.AmbientLight(0x808080);
     this.lights.push(ambientLight);
     this.scene.add(ambientLight);
 
     // Add a point light as well
-    let pLight = new THREE.PointLight(0xffffff, 7,10,2);
-    pLight.position.set(0,5,0);
+    const pLight = new THREE.PointLight(0xffffff, 7, 10, 2);
+    pLight.position.set(0, 5, 0);
     this.lights.push(pLight);
     this.scene.add(pLight);
 
     // Place the cylinder floor in the world
-    // (This is a placeholder for the tray that will hold the liveloops)
-    let cylinder = new Cylinder(
-      new THREE.CylinderGeometry(4,4,0.5,32,32),
-      new THREE.MeshPhongMaterial({ color: 0xfff8b6, specular: 0xfffce3, shininess: 1 })
+    // This is a placeholder for the tray that will hold the liveloops
+    const cylinder = new Cylinder(
+      new THREE.CylinderGeometry(4, 4, 0.5, 32, 32),
+      new THREE.MeshPhongMaterial({ color: 0xfff8b6, specular: 0xfffce3, shininess: 1 }),
     );
-    cylinder.getMesh().position.set(0,-2,0);
+
+    cylinder.getMesh().position.set(0, -2, 0);
 
     // Add the shape and mesh to their respective arrays
     this.shapes.push(cylinder);
