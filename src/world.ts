@@ -27,9 +27,9 @@ export class World {
   private effects : { [index: number] : Array<number> } = {};
 
   /**
-   * Lights associated with the world
+   * Lights associated with the world.
    * NOTE: We simply use three's implementations of lights as
-   * we need not carry around any additional information (yet)
+   * we need not carry around any additional information (yet).
    */
   private lights : Array<THREE.Light> = [];
 
@@ -114,31 +114,31 @@ export class World {
   }
 
   /**
-   * Set up the physical environment itself
+   * Set up the physical environment itself.
   */
   setupEnvironment() {
-    // Set a background colour
+    // Set a background colour:
     this.scene.background = new THREE.Color(0xff9dc6);
 
-    // Add a wireframe grid helper to the scene
-    // For debug purposes
+    // Add a wireframe grid helper to the scene:
+    // (for debug purposes)
     const gridHelper = new THREE.GridHelper(150, 150);
     gridHelper.position.set(0, -2, 0);
     this.scene.add(gridHelper);
 
-    // Add ambient light
+    // Add ambient light:
     const ambientLight = new THREE.AmbientLight(0x808080);
     this.lights.push(ambientLight);
     this.scene.add(ambientLight);
 
-    // Add a point light as well
+    // Add a point light:
     const pLight = new THREE.PointLight(0xffffff, 7, 10, 2);
     pLight.position.set(0, 5, 0);
     this.lights.push(pLight);
     this.scene.add(pLight);
 
-    // Place the cylinder floor in the world
-    // This is a placeholder for the tray that will hold the liveloops
+    // Place the cylinder floor in the world:
+    // (This is a placeholder for the tray that will hold the live loops.)
     const cylinder = new Cylinder(
       new THREE.CylinderGeometry(4, 4, 0.5, 32, 32),
       new THREE.MeshPhongMaterial({ color: 0xfff8b6, specular: 0xfffce3, shininess: 1 }),
@@ -146,7 +146,7 @@ export class World {
 
     cylinder.getMesh().position.set(0, -2, 0);
 
-    // Add the shape and mesh to their respective arrays
+    // Add the shape and mesh to their respective arrays:
     this.shapes.push(cylinder);
     this.scene.add(cylinder.getMesh());
   }
