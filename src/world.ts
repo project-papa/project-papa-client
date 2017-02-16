@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Shape } from 'src/shape';
+import { Shape, Cylinder } from 'src/shape';
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
 
@@ -25,6 +25,13 @@ export class World {
   private liveloops : { [index: number] : string } = {};
   // Mapping for effects is ID of liveloop (number) to IDs (numbers)
   private effects : { [index: number] : Array<number> } = {};
+
+  /**
+   * Lights associated with the world
+   * NOTE: We simply use three's implementations of lights as
+   * we need not carry around any additional information (yet)
+   */
+  private lights : Array<THREE.Light> = [];
 
   constructor() {
     // Basic set up of scene, camera, and renderer:
@@ -107,6 +114,43 @@ export class World {
   }
 
   /**
+   * Set up the physical environment itself
+  */
+  setupEnvironment() {
+    // Set a background colour
+    this.scene.background = new THREE.Color(0xff9dc6);
+    
+    // Add a wireframe grid helper to the scene 
+    // For debug purposes 
+    let gridHelper = new THREE.GridHelper( 150, 150 );
+    gridHelper.position.set(0,-2,0);
+    this.scene.add(gridHelper);
+
+    // Add ambient light
+    let ambientLight = new THREE.AmbientLight( 0x808080 ); // soft white light
+    this.lights.push(ambientLight);
+    this.scene.add(ambientLight);
+
+    // Add a point light as well
+    let pLight = new THREE.PointLight(0xffffff, 7,10,2);
+    pLight.position.set(0,5,0);
+    this.lights.push(pLight);
+    this.scene.add(pLight);
+
+    // Place the cylinder floor in the world
+    // (This is a placeholder for the tray that will hold the liveloops)
+    let cylinder = new Cylinder(
+      new THREE.CylinderGeometry(4,4,0.5,32,32),
+      new THREE.MeshPhongMaterial({ color: 0xfff8b6, specular: 0xfffce3, shininess: 1 })
+    );
+    cylinder.getMesh().position.set(0,-2,0);
+
+    // Add the shape and mesh to their respective arrays
+    this.shapes.push(cylinder);
+    this.scene.add(cylinder.getMesh());
+  }
+
+  /**
    * Update the objects in the world
    */
   update(delta: number) {
@@ -118,6 +162,9 @@ export class World {
    */
   start() {
     window.document.body.appendChild(this.renderer.domElement);
+
+    // Set up the environement itself (i.e. populate with shapes)
+    this.setupEnvironment();
 
     this.vrEnvironment
       .createAnimator(delta => this.update(delta))
