@@ -1,4 +1,4 @@
-import THREE from 'three';
+import * as THREE from 'three';
 
 export interface Shape {
   // Properties related directly to rendering of shape in three.js
