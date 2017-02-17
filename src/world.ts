@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { Shape, Cylinder } from 'src/shape';
+import { Shape, Cylinder, Box } from 'src/shape';
+import { Selector } from 'src/selector';
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
 
@@ -33,6 +34,8 @@ export class World {
    */
   private lights : Array<THREE.Light> = [];
 
+  private shapeSelector : Selector;
+
   constructor() {
     // Basic set up of scene, camera, and renderer:
     this.scene = new THREE.Scene();
@@ -50,6 +53,21 @@ export class World {
     this.vrEnvironment = new VrEnvironment(this.renderer, this.camera, this.scene);
     this.vrEnvironment.init();
     this.vrEnvironment.setSize(window.innerWidth, window.innerHeight);
+
+    // Set up the Selector by passing it the scene and camera
+    this.shapeSelector = new Selector(
+      this.camera,
+      this.scene,
+      (mesh : THREE.Mesh) => { /* On mesh selection */
+        // TEMPORARY - For demonstration purposes
+        (mesh.material as THREE.MeshPhongMaterial).color.setHex(0x00ff00);
+        return;
+      }, (mesh : THREE.Mesh) => { /* On mesh deselection */
+        // TEMPORARY - For demonstration purposes
+        (mesh.material as THREE.MeshPhongMaterial).color.setHex(0x0000ff);
+        return;
+      },
+    );
   }
 
   // Public methods:
@@ -140,7 +158,7 @@ export class World {
     // Place the cylinder floor in the world
     // This is a placeholder for the tray that will hold the liveloops
     const cylinder = new Cylinder(
-      new THREE.CylinderGeometry(4, 4, 0.5, 32, 32),
+      new THREE.CylinderGeometry(8, 8, 0.5, 32, 32),
       new THREE.MeshPhongMaterial({ color: 0xfff8b6, specular: 0xfffce3, shininess: 1 }),
     );
 
@@ -149,13 +167,25 @@ export class World {
     // Add the shape and mesh to their respective arrays
     this.shapes.push(cylinder);
     this.scene.add(cylinder.getMesh());
+
+    // TEMPORARY
+    // Add a box here...
+    const box = new Box(
+      new THREE.BoxGeometry(1, 1, 1),
+      new THREE.MeshPhongMaterial({ color: 0x65a6b2, specular: 0x69bccc, shininess: 10 }),
+    );
+
+    box.getMesh().position.set(1, 0, -1);
+
+    this.shapes.push(box);
+    this.scene.add(box.getMesh());
   }
 
   /**
    * Update the objects in the world
    */
   update(delta: number) {
-    // Do something
+    this.shapeSelector.updateSelectedMesh();
   }
 
   /**
