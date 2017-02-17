@@ -1,7 +1,6 @@
 import Effect from './Effect';
 import Coordinator from './Coordinator';
 
-
 export default class LiveLoop {
 
   private readonly rawRuby: string;
