@@ -1,4 +1,4 @@
-declare module "myo" {
+declare module 'myo' {
   class Myo {
     setLockingPolicy(policy: string): Myo;
     on(eventname: string, fn: (data: any) => void): string;
