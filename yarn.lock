@@ -2602,6 +2602,10 @@ multipipe@^0.1.2:
   dependencies:
     duplexer2 "0.0.2"
 
+myo@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/myo/-/myo-3.0.0.tgz#227907064a17bc2a7f5d32d658e1e04325ce7eb1"
+
 nan@^2.3.0:
   version "2.5.1"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.5.1.tgz#d5b01691253326a97a2bbee9e61c55d8d60351e2"
