@@ -71,9 +71,19 @@ export class World {
         if ((mesh as THREE.Mesh).geometry instanceof THREE.BoxGeometry) {
           (mesh.material as THREE.MeshPhongMaterial).color.set(Colours.getBoxDefault());
         }
-      }, () => {
-        // TEMPORARY
-        console.log("We have finished projecting the shape into the world");
+      }, () => { /* On mesh having been projected into the world */
+        const selectedMesh = this.shapeSelector.getSelectedMesh();
+        if (selectedMesh) {
+          if (!selectedMesh.userData.isProjected) {
+            const selectedShape = this.shapes[selectedMesh.userData.id];
+            selectedMesh.userData.isProjected = true;
+
+            console.log("we are projected!");
+            // TODO: Play a liveloop here...
+            // ...
+            // ...
+          }
+        }
       }
     );
   }
@@ -183,7 +193,8 @@ export class World {
       new THREE.MeshPhongMaterial({ color: 0x65a6b2, specular: 0x69bccc, shininess: 10 }),
     );
     box.getMesh().position.set(1, 0, -1);
-    // box.getMesh().userData = 0;
+    // Include some user data to work out shape from mesh
+    box.getMesh().userData = { id: this.shapes.length, isProjected: false };
     this.shapes.push(box);
     this.scene.add(box.getMesh());
 
@@ -192,7 +203,8 @@ export class World {
       new THREE.MeshPhongMaterial({ color: 0x65a6b2, specular: 0x69bccc, shininess: 10 }),
     );
     box2.getMesh().position.set(-1, 0, -1);
-    // box.getMesh().userData = 1;
+    // Include some user data to work out shape from mesh
+    box2.getMesh().userData = { id: this.shapes.length, isProjected: false };
     this.shapes.push(box2);
     this.scene.add(box2.getMesh());
   }
