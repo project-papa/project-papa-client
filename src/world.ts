@@ -1,6 +1,9 @@
 import * as THREE from 'three';
+
 import { Shape, Cylinder, Box } from 'src/shape';
+import { Colours } from 'src/colours';
 import { Selector } from 'src/selector';
+
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
 
@@ -60,13 +63,18 @@ export class World {
       this.scene,
       (mesh : THREE.Mesh) => { /* On mesh selection */
         // TEMPORARY - For demonstration purposes
-        (mesh.material as THREE.MeshPhongMaterial).color.setHex(0x00ff00);
-        return;
+        if ((mesh as THREE.Mesh).geometry instanceof THREE.BoxGeometry) {
+          (mesh.material as THREE.MeshPhongMaterial).color.set(Colours.getBoxSelected());
+        }
       }, (mesh : THREE.Mesh) => { /* On mesh deselection */
         // TEMPORARY - For demonstration purposes
-        (mesh.material as THREE.MeshPhongMaterial).color.setHex(0x0000ff);
-        return;
-      },
+        if ((mesh as THREE.Mesh).geometry instanceof THREE.BoxGeometry) {
+          (mesh.material as THREE.MeshPhongMaterial).color.set(Colours.getBoxDefault());
+        }
+      }, () => {
+        // TEMPORARY
+        console.log("We have finished projecting the shape into the world");
+      }
     );
   }
 
@@ -174,18 +182,28 @@ export class World {
       new THREE.BoxGeometry(1, 1, 1),
       new THREE.MeshPhongMaterial({ color: 0x65a6b2, specular: 0x69bccc, shininess: 10 }),
     );
-
     box.getMesh().position.set(1, 0, -1);
-
+    // box.getMesh().userData = 0;
     this.shapes.push(box);
     this.scene.add(box.getMesh());
+
+    const box2 = new Box(
+      new THREE.BoxGeometry(1, 1, 1),
+      new THREE.MeshPhongMaterial({ color: 0x65a6b2, specular: 0x69bccc, shininess: 10 }),
+    );
+    box2.getMesh().position.set(-1, 0, -1);
+    // box.getMesh().userData = 1;
+    this.shapes.push(box2);
+    this.scene.add(box2.getMesh());
   }
 
   /**
    * Update the objects in the world
    */
   update(delta: number) {
+    // TODO: Do something more maintainable about these function calls
     this.shapeSelector.updateSelectedMesh();
+    this.shapeSelector.projectMesh();
   }
 
   /**

@@ -13,6 +13,7 @@ export class Selector {
   // Functions for callbacks on mesh selection and deselection
   selectMesh : (mesh : THREE.Mesh) => void;
   deselectMesh : (mesh : THREE.Mesh) => void;
+  onMeshProjectionComplete : () => void;
 
   // Public methods
 
@@ -23,13 +24,15 @@ export class Selector {
   constructor(camera : THREE.PerspectiveCamera,
                 scene : THREE.Scene,
                 onMeshSelected : (mesh : THREE.Mesh) => void,
-                onMeshDeselected : (mesh : THREE.Mesh) => void) {
+                onMeshDeselected : (mesh : THREE.Mesh) => void,
+                onMeshProjectionComplete : () => void) {
     this.camera = camera;
     this.scene = scene;
     this.rayCaster = new THREE.Raycaster();
 
     this.selectMesh = onMeshSelected;
     this.deselectMesh = onMeshDeselected;
+    this.onMeshProjectionComplete = onMeshProjectionComplete;
   }
 
   /**
@@ -67,6 +70,27 @@ export class Selector {
       if (this.selectedMesh !== undefined) {
         this.deselectMesh(this.selectedMesh);
         this.selectedMesh = undefined;
+      }
+    }
+  }
+
+  /**
+   * Project mesh along camera vector
+   */
+  projectMesh() {
+    if (this.selectedMesh) {
+      // Temporary move scale variable - tie it more to world representation?
+      const moveScale = 1/20;
+
+      // Get the direction of the camera and scale it by scalar factor
+      const dir = this.camera.getWorldDirection().multiplyScalar(moveScale);
+
+      if (this.selectedMesh.position.length() < 4) {
+        // Add the direction vector onto the selected mesh's position
+        this.selectedMesh.position.add(dir);  
+      } else {
+        // Call the callback function 'on complete'
+        this.onMeshProjectionComplete();
       }
     }
   }
