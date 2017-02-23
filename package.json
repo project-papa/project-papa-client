@@ -20,6 +20,8 @@
     "@types/three": "^0.83.1",
     "html-webpack-plugin": "^2.28.0",
     "jest": "^18.1.0",
+    "keyboardevent-key-polyfill": "^1.0.2",
+    "rxjs": "^5.2.0",
     "testdouble": "^1.11.1",
     "three": "^0.84.0",
     "three-vreffect": "^1.0.0",
