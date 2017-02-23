@@ -74,17 +74,15 @@ export class World {
             const selectedShape = this.shapes[selectedMesh.userData.id];
             selectedMesh.userData.isProjected = true;
 
-            console.log("we are projected!");
-            const dnbShape =  this.startLiveLoop('dnb', selectedShape);
+            console.log('we are projected!');
+            const dnbShape = this.startLiveLoop('dnb', selectedShape);
             setTimeout(() => {
               this.stopLiveLoop(dnbShape);
-            }, 5000);     
+            }, 5000);
           }
         }
       },
     );
-
-    
   }
 
   // Public methods:
