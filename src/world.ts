@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { Colours } from 'src/colours';
 import { Shape, Cylinder, Box, LiveLoopShape, EffectShape } from 'src/shape';
 import { Selector } from 'src/selector';
+import { LiveLoopName, EffectName } from './generation/directory';
 
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
@@ -88,7 +89,7 @@ export class World {
   /**
    * Start live loop (by name and shape) to the world as a LiveLoopShape.
    */
-  startLiveLoop(name: string, shape: Shape) {
+  startLiveLoop(name: LiveLoopName, shape: Shape) {
     const liveLoopShape = new LiveLoopShape(name, shape);
   }
 
@@ -102,7 +103,7 @@ export class World {
   /**
    * Add effect (by name and shape) to a particular live loop (by LiveLoopShape).
    */
-  addEffect(name: string, shape: Shape, liveLoopShape : LiveLoopShape) {
+  addEffect(name: EffectName, shape: Shape, liveLoopShape : LiveLoopShape) {
     const effect = new EffectShape(name, shape, liveLoopShape);
   }
 

@@ -1,5 +1,6 @@
 import Effect from './generation/Effect';
 import LiveLoop from './generation/LiveLoop';
+import { LiveLoopName, EffectName } from './generation/directory';
 
 import * as THREE from 'three';
 
@@ -87,18 +88,12 @@ export class LiveLoopShape {
 
   // Each live loop shape has a name, shape, and live loop.
   readonly liveloop : LiveLoop;
-  constructor(public name : string, public shape : Shape) {
-    /**
-     * Update and uncomment the following once we have updated version of LiveLoop class.
-     * this.liveloop = new LiveLoop(name);
-     */
+  constructor(public name : LiveLoopName, public shape : Shape) {
+    this.liveloop = new LiveLoop(name);
   }
 
   stop() {
-    /**
-     * Update and uncomment the following once we have updated version of LiveLoop class.
-     * this.liveloop.delete();
-     */
+    this.liveloop.delete();
   }
 
 }
@@ -112,18 +107,12 @@ export class EffectShape {
 
   // Each effect shape has a name, shape, live loop, and effect.
   readonly effect : Effect;
-  constructor(public name : string, public shape : Shape, public liveLoopShape : LiveLoopShape) {
-    /**
-     * Update and uncomment following once we have updated version of Effect class.
-     * this.effect = new Effect(this.liveLoopShape.liveloop, name);
-     */
+  constructor(public name : EffectName, public shape : Shape, public liveLoopShape : LiveLoopShape) {
+    this.effect = new Effect(name, this.liveLoopShape.liveloop);
   }
 
   remove() {
-    /**
-     * Update and uncomment the following once we have updated version of Effect class.
-     * this.effect.delete();
-     */
+    this.effect.delete();
   }
 
 }
