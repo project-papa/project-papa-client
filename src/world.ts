@@ -69,9 +69,20 @@ export class World {
         if ((mesh as THREE.Mesh).geometry instanceof THREE.BoxGeometry) {
           (mesh.material as THREE.MeshPhongMaterial).color.set(Colours.getBoxDefault());
         }
-      }, () => {
-        // TEMPORARY
-        console.log('We have finished projecting the shape into the world');
+      }, () => { /* On mesh having been projected into the world */
+        const selectedMesh = this.shapeSelector.getSelectedMesh();
+        if (selectedMesh) {
+          if (!selectedMesh.userData.isProjected) {
+            const selectedShape = this.shapes[selectedMesh.userData.id];
+            selectedMesh.userData.isProjected = true;
+
+            console.log('we are projected!');
+            const dnbShape = this.startLiveLoop('dnb', selectedShape);
+            setTimeout(() => {
+              this.stopLiveLoop(dnbShape);
+            }, 5000);
+          }
+        }
       },
     );
   }
