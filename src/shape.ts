@@ -1,5 +1,5 @@
-import Effect from './Effect';
-import LiveLoop from './LiveLoop';
+import Effect from './generation/Effect';
+import LiveLoop from './generation/LiveLoop';
 
 import * as THREE from 'three';
 
