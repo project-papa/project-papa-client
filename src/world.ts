@@ -73,8 +73,8 @@ export class World {
         }
       }, () => {
         // TEMPORARY
-        console.log("We have finished projecting the shape into the world");
-      }
+        console.log('We have finished projecting the shape into the world');
+      },
     );
   }
 
@@ -183,7 +183,6 @@ export class World {
       new THREE.MeshPhongMaterial({ color: 0x65a6b2, specular: 0x69bccc, shininess: 10 }),
     );
     box.getMesh().position.set(1, 0, -1);
-    // box.getMesh().userData = 0;
     this.shapes.push(box);
     this.scene.add(box.getMesh());
 
@@ -192,7 +191,6 @@ export class World {
       new THREE.MeshPhongMaterial({ color: 0x65a6b2, specular: 0x69bccc, shininess: 10 }),
     );
     box2.getMesh().position.set(-1, 0, -1);
-    // box.getMesh().userData = 1;
     this.shapes.push(box2);
     this.scene.add(box2.getMesh());
   }
