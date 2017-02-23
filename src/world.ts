@@ -167,6 +167,7 @@ export class World {
       new THREE.TetrahedronGeometry(0.5),
       new THREE.MeshPhongMaterial({ color: 0xff6600, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
     );
+<<<<<<< HEAD
     tetrahedron.getMesh().position.set(1.5, -0.7, 0);
     this.addShape(tetrahedron);
 
@@ -190,6 +191,23 @@ export class World {
     );
     dodecahedron.getMesh().position.set(-1.2, -0.7, -1.2);
     this.addShape(dodecahedron);
+=======
+    box.getMesh().position.set(1, 0, -1);
+    // Include some user data to work out shape from mesh
+    box.getMesh().userData = { id: this.shapes.length, isProjected: false };
+    this.shapes.push(box);
+    this.scene.add(box.getMesh());
+
+    const box2 = new Box(
+      new THREE.BoxGeometry(1, 1, 1),
+      new THREE.MeshPhongMaterial({ color: 0x65a6b2, specular: 0x69bccc, shininess: 10 }),
+    );
+    box2.getMesh().position.set(-1, 0, -1);
+    // Include some user data to work out shape from mesh
+    box2.getMesh().userData = { id: this.shapes.length, isProjected: false };
+    this.shapes.push(box2);
+    this.scene.add(box2.getMesh());
+>>>>>>> 2c36072... Added more selector code
   }
 
   /**

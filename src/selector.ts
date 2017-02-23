@@ -36,6 +36,13 @@ export class Selector {
   }
 
   /**
+   * Returns the currently selected Mesh
+   */
+  getSelectedMesh() {
+    return this.selectedMesh;
+  }
+
+  /**
     * Method returns the mesh hit by a raycast
     * Provided with a bool to check whether any mesh
     * was hit at all
