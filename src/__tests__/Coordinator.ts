@@ -1,5 +1,5 @@
-import LiveLoop from '../LiveLoop';
-import Effect from '../Effect';
-import Coordinator from '../Coordinator';
+import LiveLoop from '../generation/LiveLoop';
+import Effect from '../generation/Effect';
+import Coordinator from '../generation/Coordinator';
 
 it('Compilers.', () => { return; });

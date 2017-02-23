@@ -94,7 +94,7 @@ export class Selector {
 
       if (this.selectedMesh.position.length() < 4) {
         // Add the direction vector onto the selected mesh's position
-        this.selectedMesh.position.add(dir);  
+        this.selectedMesh.position.add(dir);
       } else {
         // Call the callback function 'on complete'
         this.onMeshProjectionComplete();

@@ -1,4 +1,12 @@
+import Effect from './generation/Effect';
+import LiveLoop from './generation/LiveLoop';
+import { LiveLoopName, EffectName } from './generation/directory';
+
 import * as THREE from 'three';
+
+/**
+ * Interface for physical shapes.
+ */
 
 export interface Shape {
   // Properties related directly to rendering of shape in three.js
@@ -65,4 +73,46 @@ export class Cylinder implements Shape {
   }
 
   getMesh() { return this.mesh; }
+}
+
+/**
+ * Classes for live loop and effect shapes.
+ */
+
+/**
+ * To create a live loop in the world, create an instance of the LiveLoopShape class.
+ * To delete a live loop in the world, call .stop().
+ * This creation and deletion are wrapped up in start and stop methods in ./world.
+ */
+export class LiveLoopShape {
+
+  // Each live loop shape has a name, shape, and live loop.
+  readonly liveloop : LiveLoop;
+  constructor(public name : LiveLoopName, public shape : Shape) {
+    this.liveloop = new LiveLoop(name);
+  }
+
+  stop() {
+    this.liveloop.delete();
+  }
+
+}
+
+/**
+ * To create an effect in the world, create an instance of the EffectShape class.
+ * To delete an effect in the world, call .remove().
+ * This creation and deletion are wrapped up in add and remove methods in ./world.
+ */
+export class EffectShape {
+
+  // Each effect shape has a name, shape, live loop, and effect.
+  readonly effect : Effect;
+  constructor(public name : EffectName, public shape : Shape, public liveLoopShape : LiveLoopShape) {
+    this.effect = new Effect(name, this.liveLoopShape.liveloop);
+  }
+
+  remove() {
+    this.effect.delete();
+  }
+
 }

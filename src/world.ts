@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 
-import { Shape, Cylinder, Box } from 'src/shape';
 import { Colours } from 'src/colours';
+import { Shape, Cylinder, Box, LiveLoopShape, EffectShape } from 'src/shape';
 import { Selector } from 'src/selector';
+import { LiveLoopName, EffectName } from './generation/directory';
 
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
@@ -20,15 +21,10 @@ export class World {
   private vrEnvironment: VrEnvironment;
 
   /**
-   * Each World will also keep track of what shapes are currently in it,
-   * what live loop shapes are in it, and what effects each live loop has:
-   * NOTE: These are private members.
+   * Each World will also keep track of what shapes are currently in it.
+   * NOTE: This is a  private member.
    */
   private shapes : Array<Shape> = [];
-  // Mapping for liveloops is ID (number) to name (string)
-  private liveloops : { [index: number] : string } = {};
-  // Mapping for effects is ID of liveloop (number) to IDs (numbers)
-  private effects : { [index: number] : Array<number> } = {};
 
   /**
    * Lights associated with the world.
@@ -79,13 +75,16 @@ export class World {
             selectedMesh.userData.isProjected = true;
 
             console.log("we are projected!");
-            // TODO: Play a liveloop here...
-            // ...
-            // ...
+            const dnbShape =  this.startLiveLoop('dnb', selectedShape);
+            setTimeout(() => {
+              this.stopLiveLoop(dnbShape);
+            }, 5000);     
           }
         }
-      }
+      },
     );
+
+    
   }
 
   // Public methods:
@@ -101,52 +100,31 @@ export class World {
   }
 
   /**
-   * Add live loop (by name) to the world.
+   * Start live loop (by name and shape) to the world as a LiveLoopShape.
    */
-  addLiveLoop(name: string) {
-    /**
-     * TODO: Call addLiveloop function (from Rowan's code) to get liveloop ID
-     * and to update music.
-     * Note: Currently using placeholder of 1 for ID.
-     */
-    // Add to liveloops:
-    this.liveloops[1] = name;
-    // Add to effects (initialize to 0 effects):
-    this.effects[1] = [];
+  startLiveLoop(name: LiveLoopName, shape: Shape) {
+    return new LiveLoopShape(name, shape);
   }
 
   /**
-   * Remove live loop (by ID) from the world.
+   * Stop live loop (by LiveLoopShape) from the world.
    */
-  removeLiveLoop(id: number) {
-    // Remove from liveloops:
-    delete this.liveloops[id];
-    // Remove from effects:
-    delete this.effects[id];
-    // TODO: Call removeLiveloop function (from Rowan's code) to update music.
+  stopLiveLoop(liveLoopShape: LiveLoopShape) {
+    liveLoopShape.stop();
   }
 
   /**
-   * Add effect (by name) to a particular live loop (by ID).
+   * Add effect (by name and shape) to a particular live loop (by LiveLoopShape).
    */
-  addEffect(liveloopId: number, name: string) {
-    /**
-     * TODO: Call addEffect function (from Rowan's code) to get effect ID
-     * and to update music.
-     * Note: Currently using placeholder of 1 for ID.
-     */
-    // Add to effects:
-    this.effects[liveloopId].push(1);
+  addEffect(name: EffectName, shape: Shape, liveLoopShape : LiveLoopShape) {
+    const effect = new EffectShape(name, shape, liveLoopShape);
   }
 
   /**
-   * Remove effect (by ID) from a particular live loop (by ID).
+   * Remove effect (by EffectShape) from a particular live loop.
    */
-  removeEffect(liveloopId: number, effectId: number) {
-    // Remove from effects:
-    const index = this.effects[liveloopId].indexOf(effectId);
-    this.effects[liveloopId].splice(index, 1);
-    // TODO: Call removeEffect function (from Rowan's code) to update music.
+  removeEffect(effectShape : EffectShape) {
+    effectShape.remove();
   }
 
   /**
@@ -193,6 +171,7 @@ export class World {
       new THREE.MeshPhongMaterial({ color: 0x65a6b2, specular: 0x69bccc, shininess: 10 }),
     );
     box.getMesh().position.set(1, 0, -1);
+
     // Include some user data to work out shape from mesh
     box.getMesh().userData = { id: this.shapes.length, isProjected: false };
     this.shapes.push(box);
