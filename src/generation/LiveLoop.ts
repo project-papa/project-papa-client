@@ -1,5 +1,6 @@
 import Effect from './Effect';
 import Coordinator from './Coordinator';
+import { getRubyForLiveLoop, LiveLoopName } from './directory';
 
 export default class LiveLoop {
 
@@ -7,12 +8,12 @@ export default class LiveLoop {
   private readonly name: string;
   private volume: number;
   private outputRuby: string;
-  private parentCoord: Coordinator;
+  private id: number;
+  private tag: string;
+  private static idCount: number = 0;
+  private static coordinator = new Coordinator();
 
-  // Variable to assign a unique ID to each internal effect
-  private effectsIdCount: number;
-
-  /*
+  /**
    * Store a list of effects applied to the live loop.
    * Note that there is a notion of hierarchy - effects at the beginning
    * of the list will be applied first, with those that follow being applied
@@ -20,79 +21,62 @@ export default class LiveLoop {
    * easy lookup.
    */
   private effectsHeirarchy: Array<Effect>;
-  private activeEffects: { [id: number] : Effect };
+  private activeEffects: Set<Effect>;
 
-  public constructor(name: string,
-                    rawRuby: string,
-                    id: number,
-                    parentCoord: Coordinator) {
+  public constructor(name: LiveLoopName) {
+
+    // Get the ruby for this type of loop
+    const rawRuby = getRubyForLiveLoop(name);
+
+    // Get a unique ID for this loop and generate the tag
+    this.id = LiveLoop.idCount++;
+    this.tag = 'Loop_' + this.id + '_' + name;
 
     // Initialise the internal store of the effects
     this.effectsHeirarchy = [];
-    this.activeEffects = {};
+    this.activeEffects = new Set<Effect>();
 
     // Convert the ruby into the form of a loop
-    this.rawRuby = 'live_loop :Loop_'+id+'_'+name+' do\n'+rawRuby+'\ndo';
-    this.parentCoord = parentCoord;
+    this.rawRuby = 'live_loop :'+this.tag+' do\n'+rawRuby+'\nend';
 
     this.generateRuby();
+
+    LiveLoop.coordinator.addLoopToSet(this);
   }
 
-  public getName() { return this.name; }
+  public getTag() { return this.tag; }
 
   public getActiveEffects() { return this.activeEffects; }
 
   public getRuby() { return this.outputRuby; }
 
-  public getEffect(effectId: number) {
-    if (!this.activeEffects.hasOwnProperty(effectId)) {
-      throw new Error('Effect ID ' + effectId + ' not present');
-    }
-    return this.activeEffects[effectId];
-  }
-
-  /*
+  /**
    * Takes an argument that is the name of a defined effect, and creates a new
    * effect object. New effects are applied to the live loop last. Then Pushes
    * the update to the coordinator, and return the ID.
    */
-  public addEffect(effectName: string) {
-
-    if (!this.parentCoord.getEffectsDirectory().hasOwnProperty(effectName)) {
-      throw new Error('Effect with name '+effectName+' has not been defined.');
-    }
-
-    // Get a unique ID for this loop
-    const effectId = this.effectsIdCount;
-    this.effectsIdCount += 1;
-
-    // Create the new effect
-    const e = new Effect(effectName,
-                         this.parentCoord.getEffectsDirectory()[effectName],
-                         this);
+  public addEffectToSet(e: Effect) {
 
     // Add it to the internal store
-    this.effectsHeirarchy[effectId] = e;
+    this.activeEffects.add(e);
     this.effectsHeirarchy.push(e);
 
     this.generateAndPushRuby();
 
-    return effectId;
-
   }
 
-  /*
+  /**
    * Removes an effect with a specified ID (unique this this liveloop). Then
    * pushes this update to the coordinator.
    */
-  public removeEffect(effectId: number) {
+  public removeEffectFromSet(e: Effect) {
 
-    if (!this.activeEffects.hasOwnProperty(effectId)) {
-      throw new Error('Effect not present storage list.');
+    if (!this.activeEffects.has(e)) {
+      throw new Error('Effect not present.');
     }
 
     // Get the index of the specified effect
-    const index = this.effectsHeirarchy.indexOf(this.activeEffects[effectId]);
+    const index = this.effectsHeirarchy.indexOf(e);
 
     // Test if the effect was present
     if (index < 0) {
@@ -101,16 +85,18 @@ export default class LiveLoop {
 
     // Remove the specified effect from both storage sections
     this.effectsHeirarchy.splice(index, 1);
-    delete this.activeEffects[effectId];
+    this.activeEffects.delete(e);
 
     this.generateAndPushRuby();
   }
 
-  /*
+  /**
    * Adds each effect in turn to the underlying raw ruby code that defines this
    * live loop. DOES NOT push the update to the coordinator.
    */
   public generateRuby() {
+
+    // TODO add volume control & write function
 
     // Reset the output
     this.outputRuby = this.rawRuby;
@@ -123,12 +109,21 @@ export default class LiveLoop {
 
   }
 
-  /*
+  /**
    * Similar to generateRuby, but pushes this update to the coordinator.
    */
   public generateAndPushRuby() {
     this.generateRuby();
-    this.parentCoord.generateRuby();
+    LiveLoop.coordinator.generateRuby();
+  }
+
+  /**
+   * Method for deleting this LiveLoop from the playing set. Once a LiveLoop
+   * has been deleted, it should not be readded, and should instead be left
+   * for garbage collection.
+   */
+  public delete() {
+    LiveLoop.coordinator.removeLoopFromSet(this);
   }
 
 }
