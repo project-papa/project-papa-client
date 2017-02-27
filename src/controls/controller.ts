@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 
 keyEventPolyfill();
 
-type EventName = 'fist' | 'spread' | 'double-tap' | 'wave-in' | 'wave-out';
+export type EventName = 'fist' | 'spread' | 'double-tap' | 'wave-in' | 'wave-out';
 
 interface PoseEvent<T extends EventName> {
   type: T;

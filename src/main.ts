@@ -3,7 +3,7 @@ import { World } from './world';
 
 // Using the control events
 controls.controlEvents
-  .filter(controls.eventIs.doubleTap)
+  .filter(controls.eventIs.waveIn)
   .subscribe(controls.listenPose({
     start() { console.log('We start'); },
     finish() { console.log('We finish'); },
