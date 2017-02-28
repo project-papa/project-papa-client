@@ -56,6 +56,63 @@ export class Box implements Shape {
   getMesh() { return this.mesh; }
 }
 
+export class Tetrahedron implements Shape {
+  // Properties related directly to rendering of shape in three.js
+  /* Note: Properties are immutable for now, as unsure how the renderer
+     handles change to a Mesh once rendering has begun */
+  readonly geometry : THREE.TetrahedronGeometry;
+  readonly material : THREE.Material;
+  readonly mesh : THREE.Mesh;
+
+  constructor(geo : THREE.TetrahedronGeometry, mat : THREE.Material) {
+    this.geometry = geo;
+    this.material = mat;
+
+    // Instantiate the mesh from the geometry and the material
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+  }
+
+  getMesh() { return this.mesh; }
+}
+
+export class Octahedron implements Shape {
+  // Properties related directly to rendering of shape in three.js
+  /* Note: Properties are immutable for now, as unsure how the renderer
+     handles change to a Mesh once rendering has begun */
+  readonly geometry : THREE.OctahedronGeometry;
+  readonly material : THREE.Material;
+  readonly mesh : THREE.Mesh;
+
+  constructor(geo : THREE.OctahedronGeometry, mat : THREE.Material) {
+    this.geometry = geo;
+    this.material = mat;
+
+    // Instantiate the mesh from the geometry and the material
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+  }
+
+  getMesh() { return this.mesh; }
+}
+
+export class Dodecahedron implements Shape {
+  // Properties related directly to rendering of shape in three.js
+  /* Note: Properties are immutable for now, as unsure how the renderer
+     handles change to a Mesh once rendering has begun */
+  readonly geometry : THREE.DodecahedronGeometry;
+  readonly material : THREE.Material;
+  readonly mesh : THREE.Mesh;
+
+  constructor(geo : THREE.DodecahedronGeometry, mat : THREE.Material) {
+    this.geometry = geo;
+    this.material = mat;
+
+    // Instantiate the mesh from the geometry and the material
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+  }
+
+  getMesh() { return this.mesh; }
+}
+
 export class Cylinder implements Shape {
   // Properties related directly to rendering of shape in three.js
   /* Note: Properties are immutable for now, as unsure how the renderer
