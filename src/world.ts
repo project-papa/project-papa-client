@@ -35,9 +35,27 @@ export class World {
 
   private shapeSelector: Selector;
 
+  /**
+   * Crosshair that helps user select shapes in the world
+   */
+  private crosshair : THREE.Mesh;
+
   constructor() {
     // Basic set up of scene, camera, and renderer:
     this.scene = new THREE.Scene();
+
+    // Add the crosshair here
+    this.crosshair = new THREE.Mesh(
+      new THREE.RingGeometry( 0.02, 0.04, 32 ),
+      new THREE.MeshBasicMaterial( {
+        color: 0xffffff,
+        opacity: 0.5,
+        transparent: true,
+        side: THREE.DoubleSide
+      }),
+		);
+    this.crosshair.position.z = -2;
+    this.scene.add(this.crosshair);
 
     // NOTE: arguments to perspective camera are:
     // Field of view, aspect ratio, near and far clipping plane
@@ -59,7 +77,8 @@ export class World {
     this.shapeSelector = new Selector(
       this.camera,
       this.scene,
-      (mesh: THREE.Mesh) => { /* On mesh selection */
+      this.crosshair,
+      (mesh : THREE.Mesh) => { /* On mesh selection */
         // TEMPORARY - For demonstration purposes
         if ((mesh as THREE.Mesh).geometry instanceof THREE.BoxGeometry) {
           (mesh.material as THREE.MeshPhongMaterial).color.set(Colours.getBoxSelected());
