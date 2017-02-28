@@ -4,7 +4,7 @@
 
 You can click and drag with the mouse to immitate moving the headset.
 
-You can use the keyboard to immitate the Myo. You can see the mappings from keys to gestures [here](src/controls/keyboard.ts).
+You can use the keyboard to immitate the Myo. You can see the mappings from keys to gestures [here](src/controls/keyboard/index.ts).
 
 ## Contributing
 
