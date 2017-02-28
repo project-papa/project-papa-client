@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import { Colours } from 'src/colours';
-import { Shape, Cylinder, Box, LiveLoopShape, EffectShape } from 'src/shape';
+import { Shape, Sphere, Torus, Icosahedron, Cylinder, Box, Tetrahedron, Octahedron, Dodecahedron, LiveLoopShape, EffectShape } from 'src/shape';
 import { Selector } from 'src/selector';
 import { LiveLoopName, EffectName } from './generation/directory';
 
@@ -24,16 +24,16 @@ export class World {
    * Each World will also keep track of what shapes are currently in it.
    * NOTE: This is a  private member.
    */
-  private shapes : Array<Shape> = [];
+  private shapes: Array<Shape> = [];
 
   /**
    * Lights associated with the world.
    * NOTE: We simply use three's implementations of lights as
    * we need not carry around any additional information (yet).
    */
-  private lights : Array<THREE.Light> = [];
+  private lights: Array<THREE.Light> = [];
 
-  private shapeSelector : Selector;
+  private shapeSelector: Selector;
 
   constructor() {
     // Basic set up of scene, camera, and renderer:
@@ -57,12 +57,12 @@ export class World {
     this.shapeSelector = new Selector(
       this.camera,
       this.scene,
-      (mesh : THREE.Mesh) => { /* On mesh selection */
+      (mesh: THREE.Mesh) => { /* On mesh selection */
         // TEMPORARY - For demonstration purposes
         if ((mesh as THREE.Mesh).geometry instanceof THREE.BoxGeometry) {
           (mesh.material as THREE.MeshPhongMaterial).color.set(Colours.getBoxSelected());
         }
-      }, (mesh : THREE.Mesh) => { /* On mesh deselection */
+      }, (mesh: THREE.Mesh) => { /* On mesh deselection */
         // TEMPORARY - For demonstration purposes
         if ((mesh as THREE.Mesh).geometry instanceof THREE.BoxGeometry) {
           (mesh.material as THREE.MeshPhongMaterial).color.set(Colours.getBoxDefault());
@@ -103,14 +103,14 @@ export class World {
   /**
    * Add effect (by name and shape) to a particular live loop (by LiveLoopShape).
    */
-  addEffect(name: EffectName, shape: Shape, liveLoopShape : LiveLoopShape) {
+  addEffect(name: EffectName, shape: Shape, liveLoopShape: LiveLoopShape) {
     const effect = new EffectShape(name, shape, liveLoopShape);
   }
 
   /**
    * Remove effect (by EffectShape) from a particular live loop.
    */
-  removeEffect(effectShape : EffectShape) {
+  removeEffect(effectShape: EffectShape) {
     effectShape.remove();
   }
 
@@ -119,7 +119,7 @@ export class World {
   */
   setupEnvironment() {
     // Set a background colour:
-    this.scene.background = new THREE.Color(0xff9dc6);
+    this.scene.background = new THREE.Color(0x0d0d0d);
 
     // Add a wireframe grid helper to the scene:
     // (for debug purposes)
@@ -141,11 +141,11 @@ export class World {
     // Place the cylinder floor in the world:
     // (This is a placeholder for the tray that will hold the live loops.)
     const cylinder = new Cylinder(
-      new THREE.CylinderGeometry(8, 8, 0.5, 32, 32),
-      new THREE.MeshPhongMaterial({ color: 0xfff8b6, specular: 0xfffce3, shininess: 1 }),
+      new THREE.CylinderGeometry(10, 10, 0.5, 32, 32),
+      new THREE.MeshPhongMaterial({ color: 0xffffff, opacity: 0.2, transparent: true }),
     );
 
-    cylinder.getMesh().position.set(0, -2, 0);
+    cylinder.getMesh().position.set(0, -5, 0);
 
     // Add the shape and mesh to their respective arrays:
     this.shapes.push(cylinder);
@@ -153,21 +153,41 @@ export class World {
 
     // TEMPORARY
     // Add a box here...
-    const box = new Box(
-      new THREE.BoxGeometry(1, 1, 1),
-      new THREE.MeshPhongMaterial({ color: 0x65a6b2, specular: 0x69bccc, shininess: 10 }),
-    );
-    box.getMesh().position.set(1, 0, -1);
-    this.shapes.push(box);
-    this.scene.add(box.getMesh());
 
-    const box2 = new Box(
-      new THREE.BoxGeometry(1, 1, 1),
-      new THREE.MeshPhongMaterial({ color: 0x65a6b2, specular: 0x69bccc, shininess: 10 }),
+    const box = new Box(
+      new THREE.BoxGeometry(0.5, 0.5, 0.5),
+      new THREE.MeshPhongMaterial({ color: 0x00ffff, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
     );
-    box2.getMesh().position.set(-1, 0, -1);
-    this.shapes.push(box2);
-    this.scene.add(box2.getMesh());
+    box.getMesh().position.set(0, -0.7, -1.5);
+    this.addShape(box);
+
+    const tetrahedron = new Tetrahedron(
+      new THREE.TetrahedronGeometry(0.5),
+      new THREE.MeshPhongMaterial({ color: 0xff6600, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
+    );
+    tetrahedron.getMesh().position.set(1.5, -0.7, 0);
+    this.addShape(tetrahedron);
+
+    const octahedron = new Octahedron(
+      new THREE.OctahedronGeometry(0.4, 0),
+      new THREE.MeshPhongMaterial({ color: 0xffff00, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
+    );
+    octahedron.getMesh().position.set(-1.5, -0.5, 0);
+    this.addShape(octahedron);
+
+    const icos = new Icosahedron(
+      new THREE.IcosahedronGeometry(0.5, 0),
+      new THREE.MeshPhongMaterial({ color: 0xff00ff, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
+    );
+    icos.getMesh().position.set(1.4, -1, -1.4);
+    this.addShape(icos);
+
+    const dodecahedron = new Dodecahedron(
+      new THREE.DodecahedronGeometry(0.4, 0),
+      new THREE.MeshPhongMaterial({ color: 0x66ff33, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
+    );
+    dodecahedron.getMesh().position.set(-1.2, -0.7, -1.2);
+    this.addShape(dodecahedron);
   }
 
   /**
@@ -175,8 +195,8 @@ export class World {
    */
   update(delta: number) {
     // TODO: Do something more maintainable about these function calls
-    this.shapeSelector.updateSelectedMesh();
-    this.shapeSelector.projectMesh();
+    /* this.shapeSelector.updateSelectedMesh();
+     this.shapeSelector.projectMesh();*/
   }
 
   /**

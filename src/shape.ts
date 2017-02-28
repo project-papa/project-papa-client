@@ -75,6 +75,44 @@ export class Tetrahedron implements Shape {
   getMesh() { return this.mesh; }
 }
 
+export class Torus implements Shape {
+  // Properties related directly to rendering of shape in three.js
+  /* Note: Properties are immutable for now, as unsure how the renderer
+     handles change to a Mesh once rendering has begun */
+  readonly geometry : THREE.TorusGeometry;
+  readonly material : THREE.Material;
+  readonly mesh : THREE.Mesh;
+
+  constructor(geo : THREE.TorusGeometry, mat : THREE.Material) {
+    this.geometry = geo;
+    this.material = mat;
+
+    // Instantiate the mesh from the geometry and the material
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+  }
+
+  getMesh() { return this.mesh; }
+}
+
+export class Icosahedron implements Shape {
+  // Properties related directly to rendering of shape in three.js
+  /* Note: Properties are immutable for now, as unsure how the renderer
+     handles change to a Mesh once rendering has begun */
+  readonly geometry : THREE.IcosahedronGeometry;
+  readonly material : THREE.Material;
+  readonly mesh : THREE.Mesh;
+
+  constructor(geo : THREE.IcosahedronGeometry, mat : THREE.Material) {
+    this.geometry = geo;
+    this.material = mat;
+
+    // Instantiate the mesh from the geometry and the material
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+  }
+
+  getMesh() { return this.mesh; }
+}
+
 export class Octahedron implements Shape {
   // Properties related directly to rendering of shape in three.js
   /* Note: Properties are immutable for now, as unsure how the renderer
