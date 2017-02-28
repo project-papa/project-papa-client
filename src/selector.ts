@@ -10,6 +10,8 @@ export class Selector {
   // Note may be undefined (i.e. no mesh selected)
   private selectedMesh? : THREE.Mesh;
 
+  private crosshair : THREE.Mesh
+
   // Functions for callbacks on mesh selection and deselection
   selectMesh : (mesh : THREE.Mesh) => void;
   deselectMesh : (mesh : THREE.Mesh) => void;
@@ -22,17 +24,26 @@ export class Selector {
    * and scene from which meshes can be selected
    */
   constructor(camera : THREE.PerspectiveCamera,
-                scene : THREE.Scene,
-                onMeshSelected : (mesh : THREE.Mesh) => void,
-                onMeshDeselected : (mesh : THREE.Mesh) => void,
-                onMeshProjectionComplete : () => void) {
+              scene : THREE.Scene,
+              crosshair : THREE.Mesh,
+              onMeshSelected : (mesh : THREE.Mesh) => void,
+              onMeshDeselected : (mesh : THREE.Mesh) => void,
+              onMeshProjectionComplete : () => void) {
     this.camera = camera;
     this.scene = scene;
+    this.crosshair = crosshair;
     this.rayCaster = new THREE.Raycaster();
 
     this.selectMesh = onMeshSelected;
     this.deselectMesh = onMeshDeselected;
     this.onMeshProjectionComplete = onMeshProjectionComplete;
+  }
+
+  /**
+   * Returns the currently selected Mesh
+   */
+  getSelectedMesh() {
+    return this.selectedMesh;
   }
 
   /**
@@ -47,10 +58,26 @@ export class Selector {
     this.rayCaster.setFromCamera(
       { x : 0, y : 0 },
       this.camera,
-    );
+    ); 
+
+    
+    
 
     // Get array of intersected objects
     const intersects = this.rayCaster.intersectObjects(this.scene.children);
+
+    // Update the crosshair
+    //const scale = 2;
+    //const pos = this.camera.getWorldDirection().normalize().multiplyScalar(scale);
+    //this.crosshair.position.set(pos.x, pos.y, pos.z);
+
+    const dir = this.camera.getWorldDirection().normalize();
+    const initial = new THREE.Vector3(0,0,1);
+
+    const theta = Math.acos(dir.dot(initial));
+
+    // this.crosshair.
+    
 
     // Check if raycaster intersects with a mesh
     if (intersects[0] && intersects[0].object instanceof THREE.Mesh) {

@@ -35,9 +35,27 @@ export class World {
 
   private shapeSelector : Selector;
 
+  /**
+   * Crosshair that helps user select shapes in the world
+   */
+  private crosshair : THREE.Mesh;
+
   constructor() {
     // Basic set up of scene, camera, and renderer:
     this.scene = new THREE.Scene();
+
+    // Add the crosshair here
+    this.crosshair = new THREE.Mesh(
+      new THREE.RingGeometry( 0.02, 0.04, 32 ),
+      new THREE.MeshBasicMaterial( {
+        color: 0xffffff,
+        opacity: 0.5,
+        transparent: true,
+        side: THREE.DoubleSide
+      }),
+		);
+    this.crosshair.position.z = -2;
+    this.scene.add(this.crosshair);
 
     // NOTE: arguments to perspective camera are:
     // Field of view, aspect ratio, near and far clipping plane
@@ -59,6 +77,7 @@ export class World {
     this.shapeSelector = new Selector(
       this.camera,
       this.scene,
+      this.crosshair,
       (mesh : THREE.Mesh) => { /* On mesh selection */
         // TEMPORARY - For demonstration purposes
         if ((mesh as THREE.Mesh).geometry instanceof THREE.BoxGeometry) {
@@ -69,9 +88,20 @@ export class World {
         if ((mesh as THREE.Mesh).geometry instanceof THREE.BoxGeometry) {
           (mesh.material as THREE.MeshPhongMaterial).color.set(Colours.getBoxDefault());
         }
-      }, () => {
-        // TEMPORARY
-        console.log('We have finished projecting the shape into the world');
+      }, () => { /* On mesh having been projected into the world */
+        const selectedMesh = this.shapeSelector.getSelectedMesh();
+        if (selectedMesh) {
+          if (!selectedMesh.userData.isProjected) {
+            const selectedShape = this.shapes[selectedMesh.userData.id];
+            selectedMesh.userData.isProjected = true;
+
+            console.log('we are projected!');
+            const dnbShape = this.startLiveLoop('dnb', selectedShape);
+            setTimeout(() => {
+              this.stopLiveLoop(dnbShape);
+            }, 5000);
+          }
+        }
       },
     );
   }
@@ -92,7 +122,7 @@ export class World {
    * Start live loop (by name and shape) to the world as a LiveLoopShape.
    */
   startLiveLoop(name: LiveLoopName, shape: Shape) {
-    const liveLoopShape = new LiveLoopShape(name, shape);
+    return new LiveLoopShape(name, shape);
   }
 
   /**
@@ -160,6 +190,9 @@ export class World {
       new THREE.MeshPhongMaterial({ color: 0x65a6b2, specular: 0x69bccc, shininess: 10 }),
     );
     box.getMesh().position.set(1, 0, -1);
+
+    // Include some user data to work out shape from mesh
+    box.getMesh().userData = { id: this.shapes.length, isProjected: false };
     this.shapes.push(box);
     this.scene.add(box.getMesh());
 
@@ -168,6 +201,8 @@ export class World {
       new THREE.MeshPhongMaterial({ color: 0x65a6b2, specular: 0x69bccc, shininess: 10 }),
     );
     box2.getMesh().position.set(-1, 0, -1);
+    // Include some user data to work out shape from mesh
+    box2.getMesh().userData = { id: this.shapes.length, isProjected: false };
     this.shapes.push(box2);
     this.scene.add(box2.getMesh());
   }
