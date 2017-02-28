@@ -40,7 +40,7 @@ export default class SmartWebSocket<T> {
 
   constructor(websocket: WebSocket) {
     this.websocket = websocket;
-    this.observable = websocketToObservable<T>(this.websocket);
+    this.observable = websocketToObservable<T>(this.websocket).share();
     awaitWebsocketReady(this.websocket)
       .then(() => this.flushMessageQueue());
   }

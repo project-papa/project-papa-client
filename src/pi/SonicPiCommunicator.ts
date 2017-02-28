@@ -12,7 +12,7 @@ interface SonicPiMessage {
 
 interface OscilloscopeMessage {
   type: 'osc';
-  oscData: any;
+  oscData: number[];
 }
 
 type CommunicatorMessage = SonicPiMessage | OscilloscopeMessage;

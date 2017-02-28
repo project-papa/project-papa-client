@@ -139,4 +139,22 @@ export default class LiveLoop {
     LiveLoop.coordinator.removeLoopFromSet(this);
   }
 
+  oscilloscopeData() {
+    return LiveLoop.coordinator.oscilloscopeDataForIndex(this.scopeNum);
+  }
+
+  static globalOscilloscopeData() {
+    return this.coordinator.globalOscilloscopeData();
+  }
+}
+
+/**
+ * Example of subscribing to a live loop
+ */
+function subscribeToLiveLoop() {
+  (new LiveLoop('weird_vinyl')).oscilloscopeData().subscribe(
+    number => {
+      console.log(number);
+    },
+  );
 }
