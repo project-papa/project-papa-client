@@ -40,8 +40,6 @@ export default class Effect {
       throw new Error('Parameter with name '+name+' has not been defined.');
     }
 
-    // TODO: add sanity checking that the value is within bounds
-
     this.parameters.set(name, value);
     this.generateAndPushRuby();
 
