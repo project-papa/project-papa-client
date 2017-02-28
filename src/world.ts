@@ -4,7 +4,7 @@ import { Colours } from 'src/colours';
 import { Shape, Cylinder, Box, LiveLoopShape, EffectShape } from 'src/shape';
 import { Selector } from 'src/selector';
 import { LiveLoopName, EffectName } from './generation/directory';
-
+import createReticle from './reticle';
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
 
@@ -46,6 +46,8 @@ export class World {
       window.innerWidth / window.innerHeight,
       0.1, 1000,
     );
+    this.camera.add(createReticle());
+    this.scene.add(this.camera);
 
     // Set up VR environment:
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
