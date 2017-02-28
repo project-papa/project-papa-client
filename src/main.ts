@@ -1,5 +1,6 @@
 import * as controls from './controls';
 import { World } from './world';
+import SonicPiCommunicator from 'src/pi/SonicPiCommunicator';
 
 // Using the control events
 controls.controlEvents
