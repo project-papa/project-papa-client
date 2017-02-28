@@ -8,18 +8,60 @@ export default class Coordinator {
   private outputRuby: string;
   private communicator: SonicPiCommunicator = new SonicPiCommunicator();
 
+  // List of free num slots
+  private freeScopeNums = new Array();
+
   // Set of active loops
   private activeLoops = new Set<LiveLoop>();
 
   // List of killed loops
   private deadLoops = new Set<LiveLoop>();
 
-  public getRuby() { return this.outputRuby; }
-
   public constructor() {
 
-    // TODO: set header
+    // Add the free scope numbers
+    for(let i = 2; i < 128; i++) {
+      this.freeScopeNums[i] = i;
+    }
 
+    // Define the header timing information
+    this.header =
+    `use_bpm 100
+
+    live_loop :metronome_2 do
+      sleep 2
+    end
+
+    live_loop :metronome_4 do
+      sync :metronome_2
+      with_fx :level, amp: 0.5 do
+        use_synth :chipbass
+        play 110, amp: 5, release: 0.02
+        sleep 1
+        play 90, release: 0.01
+        sleep 1
+        play 90, release: 0.01
+        sleep 1
+        play 90, release: 0.01
+        sleep 1
+      end
+    end
+
+    live_loop :metronome_8 do
+      sync :metronome_4
+      sleep 8
+    end`;
+
+  }
+
+  public getRuby() { return this.outputRuby; }
+
+  // Remove and return a free scope number
+  public getFreeScope() {
+
+    // TODO add test that a scope num is free and throw error if not
+
+    return this.freeScopeNums.shift();
   }
 
   /**
@@ -48,6 +90,9 @@ export default class Coordinator {
     this.activeLoops.delete(l);
     this.deadLoops.add(l);
 
+    // Free up the scope num
+    this.freeScopeNums.push(l.getScopeNum());
+
     this.generateRuby();
   }
 
@@ -65,6 +110,10 @@ export default class Coordinator {
     for (const loop of this.activeLoops) {
       this.outputRuby = this.outputRuby + loop.getRuby() + '\n';
     }
+
+    // Add global scope number 1
+    this.outputRuby = 'with_fx \"sonic-pi-fx_scope_out\", scope_num: 1 do\n'
+                      + this.outputRuby + '\nend\n';
 
     // Stop all killed loops
     if (this.deadLoops.size !== 0) {

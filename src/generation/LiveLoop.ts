@@ -10,6 +10,7 @@ export default class LiveLoop {
   private outputRuby: string;
   private id: number;
   private tag: string;
+  private readonly scopeNum: number;
   private static idCount: number = 0;
   private static coordinator = new Coordinator();
 
@@ -24,6 +25,8 @@ export default class LiveLoop {
   private activeEffects: Set<Effect>;
 
   public constructor(name: LiveLoopName) {
+
+    this.scopeNum = LiveLoop.coordinator.getFreeScope();
 
     // Get the ruby for this type of loop
     const rawRuby = getRubyForLiveLoop(name);
@@ -46,9 +49,16 @@ export default class LiveLoop {
 
   public getTag() { return this.tag; }
 
+  public getScopeNum() { return this.scopeNum; }
+
   public getActiveEffects() { return this.activeEffects; }
 
   public getRuby() { return this.outputRuby; }
+
+  public setVolume(v: number) {
+    // TODO sanity check v
+    this.volume = v;
+  }
 
   /**
    * Takes an argument that is the name of a defined effect, and creates a new
@@ -96,8 +106,6 @@ export default class LiveLoop {
    */
   public generateRuby() {
 
-    // TODO add volume control & write function
-
     // Reset the output
     this.outputRuby = this.rawRuby;
 
@@ -107,6 +115,11 @@ export default class LiveLoop {
         this.effectsHeirarchy[i].getRuby() + '\n' + this.outputRuby + '\nend';
     }
 
+    // TODO set vol wrapper
+
+    // Add the  oscilliscope data wrapper
+    this.outputRuby = 'with_fx \"sonic-pi-fx_scope_out\", scope_num: '
+                    + this.scopeNum + ' do\n' + this.outputRuby + '\nend\n';
   }
 
   /**
