@@ -1,4 +1,5 @@
 import WebSocket from './WebSocket';
+import { Observable } from 'rxjs';
 
 export interface Message {
   [index: string]: any;
@@ -17,18 +18,29 @@ function awaitWebsocketReady(websocket: WebSocket) {
   });
 }
 
+function websocketToObservable<T>(websocket: WebSocket) {
+  return new Observable<T>(subscriber => {
+    websocket.addEventListener(
+      'message',
+      (event: MessageEvent) => subscriber.next(JSON.parse(event.data)),
+    );
+  });
+}
+
 /**
  * A smart WebSocket will allow you to enqueue messeges _before_
  * the socket has opened successfully.
  *
  * It will also automatically JSON encode messages sent to it.
  */
-export default class SmartWebSocket {
+export default class SmartWebSocket<T> {
   websocket: WebSocket;
   messageQueue: Message[] = [];
+  observable: Observable<T>;
 
   constructor(websocket: WebSocket) {
     this.websocket = websocket;
+    this.observable = websocketToObservable<T>(this.websocket);
     awaitWebsocketReady(this.websocket)
       .then(() => this.flushMessageQueue());
   }
@@ -43,6 +55,10 @@ export default class SmartWebSocket {
     }
 
     this.sendMessage(message);
+  }
+
+  observe() {
+    return this.observable;
   }
 
   private flushMessageQueue() {
