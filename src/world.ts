@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { Colours } from 'src/colours';
 import { Shape, Sphere, Torus, Icosahedron, Cylinder, Box, Tetrahedron, Octahedron, Dodecahedron, LiveLoopShape } from 'src/shape';
 import { Selector } from 'src/selector';
+import { Entity } from 'src/entities/entity';
 import { LiveLoopName, EffectName } from './generation/directory';
 import createReticle from './reticle';
 import VrEnvironment from './VrEnvironment';
@@ -19,6 +20,7 @@ export class World {
   private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
   private vrEnvironment: VrEnvironment;
+  private entities: Set<Entity> = new Set();
 
   /**
    * Each World will also keep track of what shapes are currently in it.
@@ -77,6 +79,38 @@ export class World {
   }
 
   // Public methods:
+
+  /**
+   * Add an entity to the world
+   *
+   * entity.onAdd will be called when the entity _is_ in the entity set
+   */
+  addEntity(entity: Entity) {
+    if (this.hasEntity(entity)) {
+      throw new Error('Cannot add an entity to a world twice');
+    }
+
+    this.entities.add(entity);
+    entity.onAdd(this);
+  }
+
+  /**
+   * Remove an entity from the world
+   *
+   * entity.onRemove will be called when the entity is _not_ in the entity set
+   */
+  removeEntity(entity: Entity) {
+    if (!this.hasEntity(entity)) {
+      throw new Error('Cannot remove an entity that is not in the world');
+    }
+
+    this.entities.delete(entity);
+    entity.onRemove(this);
+  }
+
+  hasEntity(entity: Entity) {
+    return this.entities.has(entity);
+  }
 
   /**
    * Add shape to world:
