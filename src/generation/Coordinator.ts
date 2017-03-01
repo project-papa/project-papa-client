@@ -1,6 +1,8 @@
 import LiveLoop from './LiveLoop';
 import SonicPiCommunicator from '../pi/SonicPiCommunicator';
 
+const GLOBAL_OSCILLOSCOPE_INDEX = 1;
+
 export default class Coordinator {
 
   private header: string = '';
@@ -17,11 +19,12 @@ export default class Coordinator {
   private deadLoops = new Set<LiveLoop>();
 
   public constructor() {
-
     // Add the free scope numbers
     for(let i = 2; i < 128; i++) {
-      this.freeScopeNums[i] = i;
+      this.freeScopeNums.push(i);
     }
+
+    console.log(this.freeScopeNums);
 
     // Define the header timing information
     this.header =
@@ -116,8 +119,11 @@ export default class Coordinator {
     }
 
     // Add global scope number 1
-    this.outputRuby = 'with_fx \"sonic-pi-fx_scope_out\", scope_num: 1 do\n'
-                      + this.outputRuby + '\nend\n';
+    this.outputRuby = `
+      with_fx "sonic-pi-fx_scope_out", scope_num: ${GLOBAL_OSCILLOSCOPE_INDEX} do
+        ${this.outputRuby}
+      end
+    `;
 
     // Stop all killed loops
     if (this.deadLoops.size !== 0) {
@@ -132,7 +138,18 @@ export default class Coordinator {
       this.deadLoops = new Set<LiveLoop>();
     }
 
+    console.log(this.outputRuby);
+
     this.communicator.runCode(this.outputRuby);
   }
 
+  public oscilloscopeDataForIndex(scopeNum: number) {
+    return this.communicator
+      .oscData()
+      .map(oscData => oscData.oscData[scopeNum]);
+  }
+
+  public globalOscilloscopeData() {
+    return this.oscilloscopeDataForIndex(GLOBAL_OSCILLOSCOPE_INDEX);
+  }
 }

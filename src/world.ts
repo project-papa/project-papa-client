@@ -93,6 +93,17 @@ export class World {
    */
   startLiveLoop(name: LiveLoopName, shape: Shape) {
     const liveLoopShape = new LiveLoopShape(name, shape);
+    liveLoopShape.liveloop.oscilloscopeData().subscribe(
+      amplitude => {
+        // Calculate scaling factor from old and new amplitudes.
+        const oldAmp = liveLoopShape.shape.amplitude;
+        const factor = amplitude / oldAmp;
+        // Apply scaling.
+        liveLoopShape.shape.geometry.scale(factor, factor, factor);
+        // Update shape's amplitude.
+        liveLoopShape.shape.amplitude = amplitude;
+      },
+    );
   }
 
   /**
