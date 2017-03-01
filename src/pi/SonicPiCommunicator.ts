@@ -2,20 +2,21 @@ import SmartWebSocket, { Message } from './SmartWebSocket';
 import WebSocket from './WebSocket';
 import { Observable } from 'rxjs';
 
-interface SonicPiMessage {
-  type: 'sonic-pi';
+interface ErrorMessage {
+  message_type: 'error' | 'syntax_error';
   message: {
-    message_type: string,
-    message: any,
+    desc: string,
   };
 }
 
 interface OscilloscopeMessage {
-  type: 'osc';
-  oscData: number[];
+  message_type: 'scope/amp';
+  data: {
+    [index: number]: number,
+  };
 }
 
-type CommunicatorMessage = SonicPiMessage | OscilloscopeMessage;
+type CommunicatorMessage = ErrorMessage | OscilloscopeMessage;
 
 function createDefaultSocket() {
   return new SmartWebSocket<CommunicatorMessage>(new WebSocket(`ws://${window.location.hostname}:9162`));
@@ -50,6 +51,13 @@ export default class SonicPiCommunicator {
     });
   }
 
+  subscribeToOscilloscopes(scopeIndices: number[]) {
+    this.websocket.send({
+      command: 'subscribe',
+      scopes: scopeIndices,
+    });
+  }
+
   /**
    * Observe messages from Sonic Pi
    */
@@ -63,16 +71,16 @@ export default class SonicPiCommunicator {
   oscData() {
     return this
       .observe()
-      .filter((message): message is OscilloscopeMessage => message.type === 'osc');
+      .filter((message): message is OscilloscopeMessage => message.message_type === 'scope/amp');
   }
 
   /**
-   * Observe messages directly from Sonic Pi
+   * Observe errors from Sonic Pi
    */
-  sonicPiMessages() {
+  sonicPiErrors() {
     return this
       .observe()
-      .filter((message): message is SonicPiMessage => message.type === 'sonic-pi');
+      .filter((message): message is ErrorMessage => message.message_type === 'error' || message.message_type === 'syntax_error');
   }
 }
 
