@@ -4,7 +4,7 @@ import { Colours } from 'src/colours';
 import { Shape, Sphere, Torus, Icosahedron, Cylinder, Box, Tetrahedron, Octahedron, Dodecahedron, LiveLoopShape, EffectShape } from 'src/shape';
 import { Selector } from 'src/selector';
 import { Entity } from 'src/entities/entity';
-import LiveLoopTemplate, { templateDefinitions } from 'src/entities/liveLoopTemplate';
+import LiveLoopTemplate, { templateDefinitions } from 'src/entities/LiveLoopTemplate';
 import { LiveLoopName, EffectName } from './generation/directory';
 import createReticle from './reticle';
 import VrEnvironment from './VrEnvironment';

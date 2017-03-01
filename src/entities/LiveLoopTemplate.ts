@@ -18,7 +18,7 @@ const liveLoopMaterial = new THREE.MeshPhongMaterial({
   shininess: 10,
   shading: THREE.FlatShading,
   opacity: 0.8,
-  transparent: true
+  transparent: true,
 });
 
 /**
