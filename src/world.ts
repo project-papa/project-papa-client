@@ -3,7 +3,8 @@ import * as THREE from 'three';
 import { Colours } from 'src/colours';
 import { Shape, Sphere, Torus, Icosahedron, Cylinder, Box, Tetrahedron, Octahedron, Dodecahedron, LiveLoopShape, EffectShape } from 'src/shape';
 import { Selector } from 'src/selector';
-import { Entity } from 'src/entity';
+import { Entity } from 'src/entities/entity';
+import LiveLoopTemplate, { templateDefinitions } from 'src/entities/liveLoopTemplate';
 import { LiveLoopName, EffectName } from './generation/directory';
 import createReticle from './reticle';
 import VrEnvironment from './VrEnvironment';
@@ -16,7 +17,7 @@ export class World {
    * (set up at construction time):
    * NOTE: These are private members.
    */
-  private scene: THREE.Scene;
+  readonly scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
   private vrEnvironment: VrEnvironment;
@@ -198,43 +199,11 @@ export class World {
     this.shapes.push(cylinder);
     this.scene.add(cylinder.getMesh());
 
-    // TEMPORARY
-    // Add a box here...
-
-    const box = new Box(
-      new THREE.BoxGeometry(0.5, 0.5, 0.5),
-      new THREE.MeshPhongMaterial({ color: 0x00ffff, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
-    );
-    box.getMesh().position.set(0, -0.7, -1.5);
-    this.addShape(box);
-
-    const tetrahedron = new Tetrahedron(
-      new THREE.TetrahedronGeometry(0.5),
-      new THREE.MeshPhongMaterial({ color: 0xff6600, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
-    );
-    tetrahedron.getMesh().position.set(1.5, -0.7, 0);
-    this.addShape(tetrahedron);
-
-    const octahedron = new Octahedron(
-      new THREE.OctahedronGeometry(0.4, 0),
-      new THREE.MeshPhongMaterial({ color: 0xffff00, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
-    );
-    octahedron.getMesh().position.set(-1.5, -0.5, 0);
-    this.addShape(octahedron);
-
-    const icos = new Icosahedron(
-      new THREE.IcosahedronGeometry(0.5, 0),
-      new THREE.MeshPhongMaterial({ color: 0xff00ff, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
-    );
-    icos.getMesh().position.set(1.4, -1, -1.4);
-    this.addShape(icos);
-
-    const dodecahedron = new Dodecahedron(
-      new THREE.DodecahedronGeometry(0.4, 0),
-      new THREE.MeshPhongMaterial({ color: 0x66ff33, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
-    );
-    dodecahedron.getMesh().position.set(-1.2, -0.7, -1.2);
-    this.addShape(dodecahedron);
+    this.addEntity(new LiveLoopTemplate(templateDefinitions.ambient));
+    this.addEntity(new LiveLoopTemplate(templateDefinitions.lead));
+    this.addEntity(new LiveLoopTemplate(templateDefinitions.bass));
+    this.addEntity(new LiveLoopTemplate(templateDefinitions.percussive));
+    this.addEntity(new LiveLoopTemplate(templateDefinitions.weird));
   }
 
   /**
