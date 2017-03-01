@@ -1,5 +1,4 @@
 import LiveLoop from './LiveLoop';
-import Effect from './Effect';
 import SonicPiCommunicator from '../pi/SonicPiCommunicator';
 
 const GLOBAL_OSCILLOSCOPE_INDEX = 1;
@@ -10,8 +9,9 @@ export default class Coordinator {
   private outputRuby: string;
   private communicator: SonicPiCommunicator = new SonicPiCommunicator();
 
-  // List of free num slots
+  // Store the free num slots
   private freeScopeNums = new Array();
+  private usedScopeNums = new Set();
 
   // Set of active loops
   private activeLoops = new Set<LiveLoop>();
@@ -55,15 +55,26 @@ export default class Coordinator {
       sleep 8
     end`;
 
+    this.usedScopeNums.add(GLOBAL_OSCILLOSCOPE_INDEX);
+
   }
 
   public getRuby() { return this.outputRuby; }
 
-  // Remove and return a free scope number
+  /**
+   * Method to return a free scope number to a live loop. Scope numbers are
+   * released when a loop is deleted. Sonic Pi can handle a maximum of 128
+   * scopes, two of which are used by the global state, so a maximum of 126
+   * live loops should be created.
+   */
   public getFreeScope() {
+    if (this.freeScopeNums.length === 0) {
+      throw new Error('Too many loops are active - no free scopes');
+    }
 
-    // TODO add test that a scope num is free and throw error if not
-
+    // CHRISTIAN here a scope is put into use up
+    // Declare the scope num as used and return it.
+    this.usedScopeNums.add(this.freeScopeNums[0]);
     return this.freeScopeNums.shift();
   }
 
@@ -93,8 +104,10 @@ export default class Coordinator {
     this.activeLoops.delete(l);
     this.deadLoops.add(l);
 
+    // CHRISTIAN here a scope is freed up
     // Free up the scope num
     this.freeScopeNums.push(l.getScopeNum());
+    this.usedScopeNums.delete(l.getScopeNum());
 
     this.generateRuby();
   }

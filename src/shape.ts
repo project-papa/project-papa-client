@@ -1,4 +1,3 @@
-import Effect from './generation/Effect';
 import LiveLoop from './generation/LiveLoop';
 import { LiveLoopName, EffectName } from './generation/directory';
 
@@ -198,25 +197,6 @@ export class LiveLoopShape {
 
   stop() {
     this.liveloop.delete();
-  }
-
-}
-
-/**
- * To create an effect in the world, create an instance of the EffectShape class.
- * To delete an effect in the world, call .remove().
- * This creation and deletion are wrapped up in add and remove methods in ./world.
- */
-export class EffectShape {
-
-  // Each effect shape has a name, shape, live loop, and effect.
-  readonly effect : Effect;
-  constructor(public name : EffectName, public shape : Shape, public liveLoopShape : LiveLoopShape) {
-    this.effect = new Effect(name, this.liveLoopShape.liveloop);
-  }
-
-  remove() {
-    this.effect.delete();
   }
 
 }

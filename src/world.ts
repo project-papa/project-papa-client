@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import { Colours } from 'src/colours';
-import { Shape, Sphere, Torus, Icosahedron, Cylinder, Box, Tetrahedron, Octahedron, Dodecahedron, LiveLoopShape, EffectShape } from 'src/shape';
+import { Shape, Sphere, Torus, Icosahedron, Cylinder, Box, Tetrahedron, Octahedron, Dodecahedron, LiveLoopShape } from 'src/shape';
 import { Selector } from 'src/selector';
 import { LiveLoopName, EffectName } from './generation/directory';
 import createReticle from './reticle';
@@ -111,20 +111,6 @@ export class World {
    */
   stopLiveLoop(liveLoopShape: LiveLoopShape) {
     liveLoopShape.stop();
-  }
-
-  /**
-   * Add effect (by name and shape) to a particular live loop (by LiveLoopShape).
-   */
-  addEffect(name: EffectName, shape: Shape, liveLoopShape: LiveLoopShape) {
-    const effect = new EffectShape(name, shape, liveLoopShape);
-  }
-
-  /**
-   * Remove effect (by EffectShape) from a particular live loop.
-   */
-  removeEffect(effectShape: EffectShape) {
-    effectShape.remove();
   }
 
   /**
