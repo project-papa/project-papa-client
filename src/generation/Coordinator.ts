@@ -1,5 +1,4 @@
 import LiveLoop from './LiveLoop';
-import Effect from './Effect';
 import SonicPiCommunicator from '../pi/SonicPiCommunicator';
 
 export default class Coordinator {
@@ -56,11 +55,16 @@ export default class Coordinator {
 
   public getRuby() { return this.outputRuby; }
 
-  // Remove and return a free scope number
+  /**
+   * Method to return a free scope number to a live loop. Scope numbers are
+   * released when a loop is deleted. Sonic Pi can handle a maximum of 128
+   * scopes, two of which are used by the global state, so a maximum of 126
+   * live loops should be created.
+   */
   public getFreeScope() {
-
-    // TODO add test that a scope num is free and throw error if not
-
+    if (this.freeScopeNums.length === 0) {
+      throw new Error('Too many loops are active - no free scopes');
+    }
     return this.freeScopeNums.shift();
   }
 
