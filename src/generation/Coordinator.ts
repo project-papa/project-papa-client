@@ -161,5 +161,4 @@ export default class Coordinator {
   public globalOscilloscopeData() {
     return this.oscilloscopeDataForIndex(GLOBAL_OSCILLOSCOPE_INDEX);
   }
- 
 }
