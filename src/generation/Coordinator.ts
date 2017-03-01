@@ -20,12 +20,14 @@ export default class Coordinator {
   private deadLoops = new Set<LiveLoop>();
 
   public constructor() {
+    this.communicator.sonicPiErrors().subscribe(
+      error => console.error('Sonic Pi error!', error.message),
+    );
+
     // Add the free scope numbers
     for(let i = 2; i < 128; i++) {
       this.freeScopeNums.push(i);
     }
-
-    console.log(this.freeScopeNums);
 
     // Define the header timing information
     this.header =
@@ -56,7 +58,7 @@ export default class Coordinator {
     end`;
 
     this.usedScopeNums.add(GLOBAL_OSCILLOSCOPE_INDEX);
-
+    this.updateOscilloscopeSubscriptions();
   }
 
   public getRuby() { return this.outputRuby; }
@@ -72,9 +74,9 @@ export default class Coordinator {
       throw new Error('Too many loops are active - no free scopes');
     }
 
-    // CHRISTIAN here a scope is put into use up
     // Declare the scope num as used and return it.
     this.usedScopeNums.add(this.freeScopeNums[0]);
+    this.updateOscilloscopeSubscriptions();
     return this.freeScopeNums.shift();
   }
 
@@ -104,11 +106,10 @@ export default class Coordinator {
     this.activeLoops.delete(l);
     this.deadLoops.add(l);
 
-    // CHRISTIAN here a scope is freed up
     // Free up the scope num
     this.freeScopeNums.push(l.getScopeNum());
     this.usedScopeNums.delete(l.getScopeNum());
-
+    this.updateOscilloscopeSubscriptions();
     this.generateRuby();
   }
 
@@ -129,6 +130,7 @@ export default class Coordinator {
 
     // Add global scope number 1
     this.outputRuby = `
+      use_external_synths true
       with_fx "sonic-pi-fx_scope_out", scope_num: ${GLOBAL_OSCILLOSCOPE_INDEX} do
         ${this.outputRuby}
       end
@@ -147,18 +149,22 @@ export default class Coordinator {
       this.deadLoops = new Set<LiveLoop>();
     }
 
+    console.log('Running Ruby ======');
     console.log(this.outputRuby);
-
     this.communicator.runCode(this.outputRuby);
   }
 
   public oscilloscopeDataForIndex(scopeNum: number) {
     return this.communicator
       .oscData()
-      .map(oscData => oscData.oscData[scopeNum]);
+      .map(oscData => oscData.data[scopeNum]);
   }
 
   public globalOscilloscopeData() {
     return this.oscilloscopeDataForIndex(GLOBAL_OSCILLOSCOPE_INDEX);
+  }
+
+  updateOscilloscopeSubscriptions() {
+    this.communicator.subscribeToOscilloscopes([...this.usedScopeNums]);
   }
 }

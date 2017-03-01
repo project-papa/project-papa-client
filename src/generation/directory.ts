@@ -86,5 +86,5 @@ const effects = [
 export type EffectName = keyof typeof effects;
 
 export function getEffect(i : number) {
-  return this.effects[i];
+  return effects[i];
 }

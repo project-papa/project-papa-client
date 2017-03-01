@@ -5,7 +5,7 @@ export default class LiveLoop {
 
   private readonly rawRuby: string;
   private readonly name: string;
-  private volume: number;
+  private volume: number = 1;
   private outputRuby: string;
   private id: number;
   private tag: string;

@@ -6,19 +6,19 @@ import { Observable } from 'rxjs';
 import SonicPiCommunicator from '../SonicPiCommunicator';
 import WebSocket from '../WebSocket';
 
-const mockSonicPiMessage = {
-  type: 'sonic-pi',
-  message: {
-    messageType: 'foo',
-  },
+const mockErrorMessage = {
+  message_type: 'error',
+  message: { },
 };
 
 const mockOscMessage = {
-  type: 'osc',
-  oscData: [],
+  message_type: 'scope/amp',
+  data: {
+    1: 0.4,
+  },
 };
 
-const mockOutput = Observable.from([mockSonicPiMessage, mockOscMessage]);
+const mockOutput = Observable.from([mockErrorMessage, mockOscMessage]);
 
 it('should stop all jobs when called', () => {
   const socket: any = td.object(['send']);
@@ -41,6 +41,18 @@ it('should run code when called', () => {
   }));
 });
 
+it('should subscribe when called', () => {
+  const socket: any = td.object(['send']);
+  const communicator = new SonicPiCommunicator(socket);
+
+  communicator.subscribeToOscilloscopes([1, 2, 3]);
+
+  td.verify(socket.send({
+    command: 'subscribe',
+    scopes: [1, 2, 3],
+  }));
+});
+
 it('should pass emissions from websocket', async () => {
   const socket: any = td.object(['observe']);
   const communicator = new SonicPiCommunicator(socket);
@@ -49,7 +61,7 @@ it('should pass emissions from websocket', async () => {
   const result = await communicator.observe().toArray().toPromise();
 
   expect(result).toEqual(
-    [mockSonicPiMessage, mockOscMessage],
+    [mockErrorMessage, mockOscMessage],
   );
 });
 
@@ -58,10 +70,10 @@ it('should filter sonic pi messages correctly', async () => {
   const communicator = new SonicPiCommunicator(socket);
   td.when(socket.observe()).thenReturn(mockOutput);
 
-  const result = await communicator.sonicPiMessages().toArray().toPromise();
+  const result = await communicator.sonicPiErrors().toArray().toPromise();
 
   expect(result).toEqual(
-    [mockSonicPiMessage],
+    [mockErrorMessage],
   );
 });
 
