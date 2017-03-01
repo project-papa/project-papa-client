@@ -1,4 +1,3 @@
-import Effect from './Effect';
 import Coordinator from './Coordinator';
 import { getRubyForLiveLoop, LiveLoopName, getEffect } from './directory';
 
@@ -68,8 +67,8 @@ export default class LiveLoop {
   }
 
   /**
-   * Adds each effect in turn to the underlying raw ruby code that defines this
-   * live loop. DOES NOT push the update to the coordinator.
+   * Adds the applied effect, volume, and osc data reader wrappers.
+   * DOES NOT push the update to the coordinator.
    */
   public generateRuby() {
 
