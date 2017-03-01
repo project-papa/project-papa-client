@@ -13,6 +13,7 @@ export interface Shape {
   readonly geometry : THREE.Geometry;
   readonly material : THREE.Material;
   readonly mesh : THREE.Mesh;
+  amplitude : number;
 
   // Method exposes the mesh to be used by the World
   getMesh() : THREE.Mesh;
@@ -25,6 +26,7 @@ export class Sphere implements Shape {
   readonly geometry : THREE.SphereGeometry;
   readonly material : THREE.Material;
   readonly mesh : THREE.Mesh;
+  amplitude : number = 0.5;
 
   constructor(geo : THREE.SphereGeometry, mat : THREE.Material) {
     this.geometry = geo;
@@ -44,6 +46,7 @@ export class Box implements Shape {
   readonly geometry : THREE.BoxGeometry;
   readonly material : THREE.Material;
   readonly mesh : THREE.Mesh;
+  amplitude : number = 0.5;
 
   constructor(geo : THREE.BoxGeometry, mat : THREE.Material) {
     this.geometry = geo;
@@ -63,6 +66,7 @@ export class Tetrahedron implements Shape {
   readonly geometry : THREE.TetrahedronGeometry;
   readonly material : THREE.Material;
   readonly mesh : THREE.Mesh;
+  amplitude : number = 0.5;
 
   constructor(geo : THREE.TetrahedronGeometry, mat : THREE.Material) {
     this.geometry = geo;
@@ -82,6 +86,7 @@ export class Torus implements Shape {
   readonly geometry : THREE.TorusGeometry;
   readonly material : THREE.Material;
   readonly mesh : THREE.Mesh;
+  amplitude : number = 0.5;
 
   constructor(geo : THREE.TorusGeometry, mat : THREE.Material) {
     this.geometry = geo;
@@ -101,6 +106,7 @@ export class Icosahedron implements Shape {
   readonly geometry : THREE.IcosahedronGeometry;
   readonly material : THREE.Material;
   readonly mesh : THREE.Mesh;
+  amplitude : number = 0.5;
 
   constructor(geo : THREE.IcosahedronGeometry, mat : THREE.Material) {
     this.geometry = geo;
@@ -120,6 +126,7 @@ export class Octahedron implements Shape {
   readonly geometry : THREE.OctahedronGeometry;
   readonly material : THREE.Material;
   readonly mesh : THREE.Mesh;
+  amplitude : number = 0.5;
 
   constructor(geo : THREE.OctahedronGeometry, mat : THREE.Material) {
     this.geometry = geo;
@@ -139,6 +146,7 @@ export class Dodecahedron implements Shape {
   readonly geometry : THREE.DodecahedronGeometry;
   readonly material : THREE.Material;
   readonly mesh : THREE.Mesh;
+  amplitude : number = 0.5;
 
   constructor(geo : THREE.DodecahedronGeometry, mat : THREE.Material) {
     this.geometry = geo;
@@ -158,6 +166,7 @@ export class Cylinder implements Shape {
   readonly geometry : THREE.CylinderGeometry;
   readonly material : THREE.Material;
   readonly mesh : THREE.Mesh;
+  amplitude : number = 0.5;
 
   constructor(geo : THREE.CylinderGeometry, mat : THREE.Material) {
     this.geometry = geo;
