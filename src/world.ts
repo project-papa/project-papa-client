@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import { Colours } from 'src/colours';
 import { Shape, Sphere, Torus, Icosahedron, Cylinder, Box, Tetrahedron, Octahedron, Dodecahedron, LiveLoopShape } from 'src/shape';
-import { Selector } from 'src/selector';
+import SelectListener from 'src/SelectListener';
 import { Entity } from 'src/entities/entity';
 import LiveLoopTemplate, { templateDefinitions } from 'src/entities/LiveLoopTemplate';
 import { LiveLoopName, EffectName } from './generation/directory';
@@ -36,7 +36,7 @@ export class World {
    */
   private lights: Array<THREE.Light> = [];
 
-  private shapeSelector: Selector;
+  readonly selectListener: SelectListener;
 
   constructor() {
     // Basic set up of scene, camera, and renderer:
@@ -59,24 +59,7 @@ export class World {
     this.vrEnvironment.setSize(window.innerWidth, window.innerHeight);
 
     // Set up the Selector by passing it the scene and camera
-    this.shapeSelector = new Selector(
-      this.camera,
-      this.scene,
-      (mesh: THREE.Mesh) => { /* On mesh selection */
-        // TEMPORARY - For demonstration purposes
-        if ((mesh as THREE.Mesh).geometry instanceof THREE.BoxGeometry) {
-          (mesh.material as THREE.MeshPhongMaterial).color.set(Colours.getBoxSelected());
-        }
-      }, (mesh: THREE.Mesh) => { /* On mesh deselection */
-        // TEMPORARY - For demonstration purposes
-        if ((mesh as THREE.Mesh).geometry instanceof THREE.BoxGeometry) {
-          (mesh.material as THREE.MeshPhongMaterial).color.set(Colours.getBoxDefault());
-        }
-      }, () => {
-        // TEMPORARY
-        console.log('We have finished projecting the shape into the world');
-      },
-    );
+    this.selectListener = new SelectListener(this.camera, this.scene);
   }
 
   // Public methods:
@@ -199,6 +182,7 @@ export class World {
     // TODO: Do something more maintainable about these function calls
     /* this.shapeSelector.updateSelectedMesh();
      this.shapeSelector.projectMesh();*/
+    this.selectListener.update();
   }
 
   /**

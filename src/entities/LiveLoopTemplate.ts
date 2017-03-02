@@ -1,5 +1,7 @@
 import { Entity } from './entity';
 import { World } from 'src/world';
+import { Subscription } from 'rxjs';
+import { controlEvents, eventIs } from 'src/controls';
 import THREE = require('three');
 import { LiveLoopName } from 'src/generation/directory';
 
@@ -27,6 +29,8 @@ const liveLoopMaterial = new THREE.MeshPhongMaterial({
  */
 export default class LiveLoopTemplate implements Entity {
   mesh: THREE.Mesh;
+  subscription: Subscription;
+  selected: boolean = false;
 
   constructor(definition: LiveLoopTemplateDefinition) {
     this.mesh = new THREE.Mesh(
@@ -43,10 +47,26 @@ export default class LiveLoopTemplate implements Entity {
 
   onAdd(world: World) {
     world.scene.add(this.mesh);
+    this.subscription = new Subscription();
+    this.subscription.add(
+      world.selectListener
+        .observeSelections(this.mesh)
+        .subscribe(event => this.selected = event.selected),
+    );
+    this.subscription.add(
+      controlEvents
+        .filter(eventIs.fist)
+        .subscribe(event => {
+          if (this.selected) {
+            console.log('FIST ON ME!');
+          }
+        }),
+    );
   }
 
   onRemove(world: World) {
     world.scene.remove(this.mesh);
+    this.subscription.unsubscribe();
   }
 }
 
