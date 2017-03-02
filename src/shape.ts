@@ -1,5 +1,5 @@
 import LiveLoop from './generation/LiveLoop';
-import { LiveLoopName, EffectName } from './generation/directory';
+import { LiveLoopName } from './generation/directory';
 
 import * as THREE from 'three';
 

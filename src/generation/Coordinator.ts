@@ -1,5 +1,6 @@
 import LiveLoop from './LiveLoop';
 import SonicPiCommunicator from '../pi/SonicPiCommunicator';
+import { getLoopsOfType, LiveLoopCatagory, LiveLoopName } from './directory';
 
 const GLOBAL_OSCILLOSCOPE_INDEX = 1;
 
@@ -9,7 +10,17 @@ export default class Coordinator {
   private outputRuby: string;
   private communicator: SonicPiCommunicator = new SonicPiCommunicator();
 
-  // Store the free num slots
+  // Define the lists of loop types
+  private drums = getLoopsOfType('drums');
+  private ambient = getLoopsOfType('ambient');
+  private lead = getLoopsOfType('lead');
+  private bass = getLoopsOfType('bass');
+  private weird = getLoopsOfType('weird');
+
+  // TODO randomise order then maintain these as lists
+  // Also TODO - add where we are in the loop
+
+  // Store the free number slots
   private freeScopeNums = new Array();
   private usedScopeNums = new Set();
 
@@ -31,7 +42,7 @@ export default class Coordinator {
 
     // Define the header timing information
     this.header =
-    `use_bpm 100
+    `use_bpm 128
 
     live_loop :metronome_2 do
       sleep 2
@@ -167,4 +178,5 @@ export default class Coordinator {
   updateOscilloscopeSubscriptions() {
     this.communicator.subscribeToOscilloscopes([...this.usedScopeNums]);
   }
+
 }

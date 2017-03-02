@@ -6,7 +6,7 @@ import SelectListener from 'src/SelectListener';
 import { Entity } from 'src/entities/entity';
 import LiveLoopTemplate, { templateDefinitions } from 'src/entities/LiveLoopTemplate';
 import LiveLoopEntity, { LiveLoopEntityDefinition } from 'src/entities/LiveLoopEntity';
-import { LiveLoopName, EffectName } from './generation/directory';
+import { LiveLoopName } from './generation/directory';
 import createReticle from './reticle';
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
