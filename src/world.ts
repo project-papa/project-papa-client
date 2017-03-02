@@ -1,13 +1,14 @@
 import * as THREE from 'three';
 
 import { Colours } from 'src/colours';
-import { Shape, Sphere, Torus, Icosahedron, Cylinder, Box, Tetrahedron, Octahedron, Dodecahedron, LiveLoopShape } from 'src/shape';
+import { Cylinder, Shape } from 'src/shape';
 import SelectListener from 'src/SelectListener';
 import { Entity } from 'src/entities/entity';
 import LiveLoopTemplate, { templateDefinitions } from 'src/entities/LiveLoopTemplate';
 import LiveLoopEntity, { LiveLoopEntityDefinition } from 'src/entities/LiveLoopEntity';
 import { LiveLoopName, EffectName } from './generation/directory';
 import createReticle from './reticle';
+
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
 
@@ -19,7 +20,7 @@ export class World {
    * NOTE: These are private members.
    */
   readonly scene: THREE.Scene;
-  private camera: THREE.PerspectiveCamera;
+  readonly camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
   private vrEnvironment: VrEnvironment;
   private entities: Set<Entity> = new Set();
@@ -108,31 +109,6 @@ export class World {
   }
 
   /**
-   * Start live loop (by name and shape) to the world as a LiveLoopShape.
-   */
-  startLiveLoop(name: LiveLoopName, shape: Shape) {
-    const liveLoopShape = new LiveLoopShape(name, shape);
-    liveLoopShape.liveloop.oscilloscopeData().subscribe(
-      amplitude => {
-        // Calculate scaling factor from old and new amplitudes.
-        const oldAmp = liveLoopShape.shape.amplitude;
-        const factor = amplitude / oldAmp;
-        // Apply scaling.
-        liveLoopShape.shape.geometry.scale(factor, factor, factor);
-        // Update shape's amplitude.
-        liveLoopShape.shape.amplitude = amplitude;
-      },
-    );
-  }
-
-  /**
-   * Stop live loop (by LiveLoopShape) from the world.
-   */
-  stopLiveLoop(liveLoopShape: LiveLoopShape) {
-    liveLoopShape.stop();
-  }
-
-  /**
    * Set up the physical environment itself.
   */
   setupEnvironment() {
@@ -162,37 +138,28 @@ export class World {
       new THREE.CylinderGeometry(10, 10, 0.5, 32, 32),
       new THREE.MeshPhongMaterial({ color: 0xffffff, opacity: 0.2, transparent: true }),
     );
-
     cylinder.getMesh().position.set(0, -5, 0);
-
     // Add the shape and mesh to their respective arrays:
     this.shapes.push(cylinder);
     this.scene.add(cylinder.getMesh());
 
-    const ambientTemplate = new LiveLoopTemplate(templateDefinitions.ambient);
-    this.addEntity(ambientTemplate);
+    this.addEntity(new LiveLoopTemplate(templateDefinitions.ambient));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.lead));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.bass));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.percussive));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.weird));
-    /**
-     * Uncomment for example of adding an entity:
-     * const ambientEntityDef: LiveLoopEntityDefinition = {
-     * name: 'ambient_piano',
-     * mesh: ambientTemplate.mesh,
-     * };
-     * this.addEntity(new LiveLoopEntity(ambientEntityDef));
-     */
   }
 
   /**
    * Update the objects in the world
    */
   update(delta: number) {
-    // TODO: Do something more maintainable about these function calls
-    /* this.shapeSelector.updateSelectedMesh();
-     this.shapeSelector.projectMesh();*/
     this.selectListener.update();
+    for (const entity of this.entities) {
+      if (entity.onUpdate) {
+        entity.onUpdate(delta);
+      }
+    }
   }
 
   /**

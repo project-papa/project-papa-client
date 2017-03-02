@@ -157,7 +157,8 @@ export default class Coordinator {
   public oscilloscopeDataForIndex(scopeNum: number) {
     return this.communicator
       .oscData()
-      .map(oscData => oscData.data[scopeNum]);
+      .map(oscData => oscData.data[scopeNum])
+      .filter(amplitude => amplitude !== undefined);
   }
 
   public globalOscilloscopeData() {

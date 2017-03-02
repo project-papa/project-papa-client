@@ -12,10 +12,26 @@ export interface Shape {
   readonly geometry : THREE.Geometry;
   readonly material : THREE.Material;
   readonly mesh : THREE.Mesh;
-  amplitude : number;
 
   // Method exposes the mesh to be used by the World
   getMesh() : THREE.Mesh;
+}
+
+export class ArbitraryShape implements Shape {
+    // Properties related directly to rendering of shape in three.js
+  readonly geometry : THREE.Geometry;
+  readonly material : THREE.Material;
+  readonly mesh : THREE.Mesh;
+
+  constructor(geo : THREE.Geometry, mat : THREE.Material) {
+    this.geometry = geo;
+    this.material = mat;
+
+    // Instantiate the mesh from the geometry and the material
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+  }
+
+  getMesh() { return this.mesh; }
 }
 
 export class Sphere implements Shape {

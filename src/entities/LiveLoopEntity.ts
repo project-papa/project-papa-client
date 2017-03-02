@@ -1,7 +1,8 @@
 import { Entity } from './entity';
 import { World } from 'src/world';
 import { Subscription } from 'rxjs';
-import { controlEvents, eventIs } from 'src/controls';
+import * as controls from 'src/controls';
+import * as utils from './utils';
 import THREE = require('three');
 import { LiveLoopName } from 'src/generation/directory';
 import LiveLoop from 'src/generation/LiveLoop';
@@ -22,6 +23,8 @@ export default class LiveLoopEntity implements Entity {
   subscription: Subscription;
   selected: boolean = false;
   amplitude: number = 0.5;
+  fisted: boolean = false;
+  world: World;
 
   constructor(definition: LiveLoopEntityDefinition) {
     this.name = definition.name;
@@ -37,13 +40,38 @@ export default class LiveLoopEntity implements Entity {
         .observeSelections(this.mesh)
         .subscribe(event => this.selected = event.selected),
     );
+    this.world = world;
     this.subscription.add(
-      controlEvents
-        .filter(eventIs.fist)
+      controls.controlEvents
+        .filter(controls.eventIs.fist)
+        .subscribe(controls.listenPose({
+          start: () => {
+            if (this.selected) {
+              this.fisted = true;
+            }
+          },
+          finish: () => {
+            this.fisted = false;
+          },
+        })),
+    );
+
+    this.subscription.add(
+      controls.controlEvents
+        .filter(controls.eventIs.waveIn)
         .subscribe(event => {
           if (this.selected) {
-            console.log('FIST ON ME!');
-            // TODO: add effect changes here(?)
+            // Subtract effect
+          }
+        }),
+    );
+
+    this.subscription.add(
+      controls.controlEvents
+        .filter(controls.eventIs.waveOut)
+        .subscribe(event => {
+          if (this.selected) {
+            // Add effect
           }
         }),
     );
@@ -53,12 +81,19 @@ export default class LiveLoopEntity implements Entity {
      */
     this.liveloop.oscilloscopeData().subscribe(
       amplitude => {
+        const flooredAmplitude = Math.max(amplitude, 0.01);
         const oldAmp = this.amplitude;
-        const factor = amplitude / oldAmp;
+        const factor = flooredAmplitude / oldAmp;
         this.mesh.geometry.scale(factor, factor, factor);
-        this.amplitude = amplitude;
+        this.amplitude = flooredAmplitude;
       },
     );
+  }
+
+  onUpdate(delta: number) {
+    if (this.fisted) {
+      utils.projectMeshDistanceFromCamera(this.world.camera, this.mesh, 3);
+    }
   }
 
   onRemove(world: World) {

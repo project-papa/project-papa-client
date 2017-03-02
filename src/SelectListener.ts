@@ -25,7 +25,6 @@ export default class SelectListener {
       scene,
       mesh => this.onSelect(mesh),
       mesh => this.onDeselect(mesh),
-      () => undefined,
     );
   }
 

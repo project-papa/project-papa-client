@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import * as controls from 'src/controls';
+
+const voidFunction = () => undefined;
 
 export class Selector {
   // Private properties
@@ -13,7 +16,28 @@ export class Selector {
   // Functions for callbacks on mesh selection and deselection
   selectMesh : (mesh : THREE.Mesh) => void;
   deselectMesh : (mesh : THREE.Mesh) => void;
-  onMeshProjectionComplete : () => void;
+
+  // Functions for callbacks on fist gestures
+  onFistStart: (mesh : THREE.Mesh) => void;
+  onFistEnd: (mesh : THREE.Mesh) => void;
+
+  // Functions for callbacks on wave gestures
+  onWaveInStart: (mesh : THREE.Mesh) => void;
+  onWaveInEnd: (mesh : THREE.Mesh) => void;
+
+  onWaveOutStart: (mesh : THREE.Mesh) => void;
+  onWaveOutEnd: (mesh : THREE.Mesh) => void;
+
+  // Functions for callbacks on spread gesture
+  onSpreadStart: (mesh : THREE.Mesh) => void;
+  onSpreadEnd: (mesh : THREE.Mesh) => void;
+
+  // Properties regarding moving and projecting the mesh
+  private isMoving = false;
+  private isProjecting = false;
+  private projectingMesh? : THREE.Mesh;
+  private projectionDirection = new THREE.Vector3(0, 0, 0);
+  private movingMesh? : THREE.Mesh;
 
   // Public methods
 
@@ -21,20 +45,116 @@ export class Selector {
    * Constructor takes a camera to set up raytracer
    * and scene from which meshes can be selected
    */
-  constructor(camera : THREE.Camera,
-                scene : THREE.Scene,
-                onMeshSelected : (mesh : THREE.Mesh) => void,
-                onMeshDeselected : (mesh : THREE.Mesh) => void,
-                onMeshProjectionComplete : () => void) {
+  constructor(camera: THREE.Camera,
+              scene: THREE.Scene,
+              onMeshSelected: (mesh: THREE.Mesh) => void = voidFunction,
+              onMeshDeselected: (mesh: THREE.Mesh) => void = voidFunction,
+              onFistStart: (mesh: THREE.Mesh) => void = voidFunction,
+              onFistEnd: (mesh: THREE.Mesh) => void = voidFunction,
+              onWaveInStart: (mesh: THREE.Mesh) => void = voidFunction,
+              onWaveInEnd: (mesh: THREE.Mesh) => void = voidFunction,
+              onWaveOutStart: (mesh: THREE.Mesh) => void = voidFunction,
+              onWaveOutEnd: (mesh: THREE.Mesh) => void = voidFunction,
+              onSpreadStart: (mesh: THREE.Mesh) => void = voidFunction,
+              onSpreadEnd: (mesh: THREE.Mesh) => void = voidFunction) {
     this.camera = camera;
     this.scene = scene;
+
     this.rayCaster = new THREE.Raycaster();
 
     this.selectMesh = onMeshSelected;
     this.deselectMesh = onMeshDeselected;
-    this.onMeshProjectionComplete = onMeshProjectionComplete;
+
+    // Initialize callback functions for gestures
+    this.onFistStart = onFistStart;
+    this.onFistEnd = onFistEnd;
+    this.onWaveInStart = onWaveInStart;
+    this.onWaveInEnd = onWaveInEnd;
+    this.onWaveOutStart = onWaveOutStart;
+    this.onWaveOutEnd = onWaveOutEnd;
+    this.onSpreadStart = onSpreadStart;
+    this.onSpreadEnd = onSpreadEnd;
+
+    // Listen for fist gestures
+    controls.controlEvents
+      .filter(controls.eventIs.fist)
+      .subscribe(controls.listenPose({
+        start: () => {
+          // Check we have selected a mesh first
+          if (this.selectedMesh) {
+            this.onFistStart(this.selectedMesh);
+          }
+        },
+        finish: () => {
+          // Check we have selected a mesh first
+          if (this.selectedMesh) {
+            this.onFistEnd(this.selectedMesh);
+          }
+        },
+      }));
+
+    controls.controlEvents
+      .filter(controls.eventIs.waveIn)
+      .subscribe(controls.listenPose({
+        start: () => {
+          // Check we have selected a mesh
+          if (this.selectedMesh) {
+            this.onWaveInStart(this.selectedMesh);
+          }
+        },
+        finish: () => {
+          // Check we have selected a mesh first
+          if (this.selectedMesh) {
+            this.onWaveInEnd(this.selectedMesh);
+          }
+        },
+      }));
+
+    controls.controlEvents
+      .filter(controls.eventIs.waveOut)
+      .subscribe(controls.listenPose({
+        start: () => {
+          // Check we have selected a mesh
+          if (this.selectedMesh) {
+            this.onWaveOutStart(this.selectedMesh);
+          }
+        },
+        finish: () => {
+          // Check we have selected a mesh first
+          if (this.selectedMesh) {
+            this.onWaveOutEnd(this.selectedMesh);
+          }
+        },
+      }));
+
+    controls.controlEvents
+      .filter(controls.eventIs.spread)
+      .subscribe(controls.listenPose({
+        start: () => {
+          // Check we have selected a mesh
+          if (this.selectedMesh) {
+            this.onSpreadStart(this.selectedMesh);
+          }
+        },
+        finish: () => {
+          // Check we have selected a mesh first
+          if (this.selectedMesh) {
+            this.onSpreadEnd(this.selectedMesh);
+          }
+        },
+      }));
   }
 
+  /**
+   * Returns the currently selected Mesh
+   */
+  getSelectedMesh() {
+    return this.selectedMesh;
+  }
+
+  setSelectedMesh(mesh : THREE.Mesh) {
+    this.selectedMesh = mesh;
+  }
   /**
     * Method returns the mesh hit by a raycast
     * Provided with a bool to check whether any mesh
@@ -74,24 +194,7 @@ export class Selector {
     }
   }
 
-  /**
-   * Project mesh along camera vector
-   */
-  projectMesh() {
-    if (this.selectedMesh) {
-      // Temporary move scale variable - tie it more to world representation?
-      const moveScale = 1/20;
-
-      // Get the direction of the camera and scale it by scalar factor
-      const dir = this.camera.getWorldDirection().multiplyScalar(moveScale);
-
-      if (this.selectedMesh.position.length() < 4) {
-        // Add the direction vector onto the selected mesh's position
-        this.selectedMesh.position.add(dir);
-      } else {
-        // Call the callback function 'on complete'
-        this.onMeshProjectionComplete();
-      }
-    }
+  update(delta: number) {
+    this.updateSelectedMesh();
   }
 }
