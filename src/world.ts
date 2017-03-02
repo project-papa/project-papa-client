@@ -7,6 +7,8 @@ import { Entity } from 'src/entities/entity';
 import LiveLoopTemplate, { templateDefinitions } from 'src/entities/LiveLoopTemplate';
 import { LiveLoopName, EffectName } from './generation/directory';
 import createReticle from './reticle';
+import { LibraryLoopSpawner } from 'src/libraryloopspawner';
+
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
 
@@ -18,7 +20,7 @@ export class World {
    * NOTE: These are private members.
    */
   readonly scene: THREE.Scene;
-  private camera: THREE.PerspectiveCamera;
+  readonly camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
   private vrEnvironment: VrEnvironment;
   private entities: Set<Entity> = new Set();
@@ -30,6 +32,12 @@ export class World {
   private shapes: Array<Shape> = [];
 
   /**
+   * A separate array of live loop shapes is also maintained
+   * This allows them to be selected based on gesture
+   */
+  private liveloopShapes : Array<LiveLoopShape> = [];
+
+  /**
    * Lights associated with the world.
    * NOTE: We simply use three's implementations of lights as
    * we need not carry around any additional information (yet).
@@ -38,9 +46,33 @@ export class World {
 
   readonly selectListener: SelectListener;
 
+  /**
+   * Crosshair that helps user select shapes in the world
+   */
+  private crosshair : THREE.Mesh;
+
+  /**
+   * Spawner that managers Library of shapes that will
+   * represent live loops in tray
+   */
+  private librarySpawner : LibraryLoopSpawner;
+
   constructor() {
     // Basic set up of scene, camera, and renderer:
     this.scene = new THREE.Scene();
+
+    // Add the crosshair here
+    this.crosshair = new THREE.Mesh(
+      new THREE.RingGeometry( 0.02, 0.04, 32 ),
+      new THREE.MeshBasicMaterial( {
+        color: 0xffffff,
+        opacity: 0.5,
+        transparent: true,
+        side: THREE.DoubleSide,
+      }),
+		);
+    this.crosshair.position.z = -2;
+    this.scene.add(this.crosshair);
 
     // NOTE: arguments to perspective camera are:
     // Field of view, aspect ratio, near and far clipping plane
@@ -58,8 +90,77 @@ export class World {
     this.vrEnvironment.init();
     this.vrEnvironment.setSize(window.innerWidth, window.innerHeight);
 
+    // Set up the spawner for the shapes
+    this.librarySpawner = new LibraryLoopSpawner(this.scene);
+
     // Set up the Selector by passing it the scene and camera
     this.selectListener = new SelectListener(this.camera, this.scene);
+
+    // this.shapeSelector = new Selector(
+    //   this.camera,
+    //   this.scene,
+    //   this.crosshair,
+    //   (mesh : THREE.Mesh) => { /* On mesh selection */
+    //     // Colour the mesh appropriately
+    //     if (mesh.userData.isLiveLoop || mesh.userData.isLibraryLoop) {
+    //       (mesh.material as THREE.MeshPhongMaterial).color.set(Colours.getBoxSelected());
+    //     }
+    //   }, (mesh : THREE.Mesh) => { /* On mesh deselection */
+    //     if (mesh.userData.isLiveLoop || mesh.userData.isLibraryLoop) {
+    //       (mesh.material as THREE.MeshPhongMaterial).color.set(Colours.getBoxDefault());
+    //     }
+    //   }, (mesh : THREE.Mesh) => { /* On fist start */
+    //     // Check the selected mesh has associated live loop
+    //     if (mesh.userData.isLiveLoop) {
+    //       this.shapeSelector.startMeshMove(mesh);
+    //     } else if (mesh.userData.isLibraryLoop) {
+    //       // Get the shape from the mesh
+    //       const selectedShape = this.librarySpawner.shapelibrary[mesh.userData.id];
+
+    //       console.log(selectedShape);
+    //       // Spawn a new live loop
+    //       const newLiveLoop = this.librarySpawner.spawnNewLiveLoopShape(selectedShape);
+    //       newLiveLoop.shape.mesh.userData.id = this.liveloopShapes.length;
+
+    //       this.liveloopShapes.push(newLiveLoop);
+    //       this.scene.add(newLiveLoop.shape.mesh);
+    //       this.shapeSelector.startMeshMove(newLiveLoop.shape.mesh);
+    //     }
+    //   }, (mesh : THREE.Mesh) => { /* On fist end */
+    //     if (mesh.userData.isLiveLoop) {
+    //       this.shapeSelector.endMeshMove(mesh);
+    //     }
+    //   }, (mesh : THREE.Mesh) => { /* On wave in start */
+    //     console.log('wave in start');
+    //     // TODO: Alter effects...
+    //     // TODO: ...
+    //   }, (mesh : THREE.Mesh) => { /* On wave in end */
+    //     console.log('wave in end');
+    //     // TODO: Alter effects...
+    //     // TODO: ...
+    //   }, (mesh : THREE.Mesh) => { /* On wave out start */
+    //     console.log('wave out start');
+    //     // TODO: Alter effects...
+    //     // TODO: ...
+    //   }, (mesh : THREE.Mesh) => { /* On wave out end */
+    //     console.log('wave out end');
+    //     // TODO: Alter effects...
+    //     // TODO: ...
+    //   }, (mesh : THREE.Mesh) => { /* On spread start */
+    //     console.log('spread start');
+    //     // Maybe this is empty...?
+    //   }, (mesh : THREE.Mesh) => { /* On spread end */
+    //     console.log('spread end');
+    //     if (mesh.userData.isLiveLoop) {
+    //       const selectedShape = this.liveloopShapes[mesh.userData.id];
+    //       // End the liveloop's playing
+    //       selectedShape.stop();
+
+    //       // Delete the mesh from the world
+    //       // TODO: ...
+    //     }
+    //   },
+    // );
   }
 
   // Public methods:
@@ -161,9 +262,7 @@ export class World {
       new THREE.CylinderGeometry(10, 10, 0.5, 32, 32),
       new THREE.MeshPhongMaterial({ color: 0xffffff, opacity: 0.2, transparent: true }),
     );
-
     cylinder.getMesh().position.set(0, -5, 0);
-
     // Add the shape and mesh to their respective arrays:
     this.shapes.push(cylinder);
     this.scene.add(cylinder.getMesh());
@@ -183,6 +282,11 @@ export class World {
     /* this.shapeSelector.updateSelectedMesh();
      this.shapeSelector.projectMesh();*/
     this.selectListener.update();
+    for (const entity of this.entities) {
+      if (entity.onUpdate) {
+        entity.onUpdate(delta);
+      }
+    }
   }
 
   /**
