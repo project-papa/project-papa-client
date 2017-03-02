@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as controls from 'src/controls';
 
 export class Selector {
   // Private properties
@@ -10,12 +11,31 @@ export class Selector {
   // Note may be undefined (i.e. no mesh selected)
   private selectedMesh? : THREE.Mesh;
 
-  private crosshair : THREE.Mesh
-
   // Functions for callbacks on mesh selection and deselection
   selectMesh : (mesh : THREE.Mesh) => void;
   deselectMesh : (mesh : THREE.Mesh) => void;
-  onMeshProjectionComplete : () => void;
+
+  // Functions for callbacks on fist gestures
+  onFistStart: (mesh : THREE.Mesh) => void;
+  onFistEnd: (mesh : THREE.Mesh) => void;
+
+  // Functions for callbacks on wave gestures
+  onWaveInStart: (mesh : THREE.Mesh) => void;
+  onWaveInEnd: (mesh : THREE.Mesh) => void;
+
+  onWaveOutStart: (mesh : THREE.Mesh) => void;
+  onWaveOutEnd: (mesh : THREE.Mesh) => void;
+
+  // Functions for callbacks on spread gesture
+  onSpreadStart: (mesh : THREE.Mesh) => void;
+  onSpreadEnd: (mesh : THREE.Mesh) => void;
+
+  // Properties regarding moving and projecting the mesh
+  private isMoving = false;
+  private isProjecting = false;
+  private projectingMesh? : THREE.Mesh;
+  private projectionDirection = new THREE.Vector3(0, 0, 0);
+  private movingMesh? : THREE.Mesh;
 
   // Public methods
 
@@ -28,15 +48,100 @@ export class Selector {
               crosshair : THREE.Mesh,
               onMeshSelected : (mesh : THREE.Mesh) => void,
               onMeshDeselected : (mesh : THREE.Mesh) => void,
-              onMeshProjectionComplete : () => void) {
+              onFistStart : (mesh : THREE.Mesh) => void,
+              onFistEnd : (mesh : THREE.Mesh) => void,
+              onWaveInStart: (mesh : THREE.Mesh) => void,
+              onWaveInEnd : (mesh : THREE.Mesh) => void,
+              onWaveOutStart: (mesh : THREE.Mesh) => void,
+              onWaveOutEnd: (mesh : THREE.Mesh) => void,
+              onSpreadStart: (mesh : THREE.Mesh) => void,
+              onSpreadEnd: (mesh : THREE.Mesh) => void) {
     this.camera = camera;
     this.scene = scene;
-    this.crosshair = crosshair;
+
     this.rayCaster = new THREE.Raycaster();
 
     this.selectMesh = onMeshSelected;
     this.deselectMesh = onMeshDeselected;
-    this.onMeshProjectionComplete = onMeshProjectionComplete;
+
+    // Initialize callback functions for gestures
+    this.onFistStart = onFistStart;
+    this.onFistEnd = onFistEnd;
+    this.onWaveInStart = onWaveInStart;
+    this.onWaveInEnd = onWaveInEnd;
+    this.onWaveOutStart = onWaveOutStart;
+    this.onWaveOutEnd = onWaveOutEnd;
+    this.onSpreadStart = onSpreadStart;
+    this.onSpreadEnd = onSpreadEnd;
+
+    // Listen for fist gestures
+    controls.controlEvents
+      .filter(controls.eventIs.fist)
+      .subscribe(controls.listenPose({
+        start: () => {
+          // Check we have selected a mesh first
+          if (this.selectedMesh) {
+            this.onFistStart(this.selectedMesh);
+          }
+        },
+        finish: () => {
+          // Check we have selected a mesh first
+          if (this.selectedMesh) {
+            this.onFistEnd(this.selectedMesh);
+          }
+        },
+      }));
+
+    controls.controlEvents
+      .filter(controls.eventIs.waveIn)
+      .subscribe(controls.listenPose({
+        start: () => {
+          // Check we have selected a mesh
+          if (this.selectedMesh) {
+            this.onWaveInStart(this.selectedMesh);
+          }
+        },
+        finish: () => {
+          // Check we have selected a mesh first
+          if (this.selectedMesh) {
+            this.onWaveInEnd(this.selectedMesh);
+          }
+        },
+      }));
+
+    controls.controlEvents
+      .filter(controls.eventIs.waveOut)
+      .subscribe(controls.listenPose({
+        start: () => {
+          // Check we have selected a mesh
+          if (this.selectedMesh) {
+            this.onWaveOutStart(this.selectedMesh);
+          }
+        },
+        finish: () => {
+          // Check we have selected a mesh first
+          if (this.selectedMesh) {
+            this.onWaveOutEnd(this.selectedMesh);
+          }
+        },
+      }));
+
+    controls.controlEvents
+      .filter(controls.eventIs.spread)
+      .subscribe(controls.listenPose({
+        start: () => {
+          // Check we have selected a mesh
+          if (this.selectedMesh) {
+            this.onSpreadStart(this.selectedMesh);
+          }
+        },
+        finish: () => {
+          // Check we have selected a mesh first
+          if (this.selectedMesh) {
+            this.onSpreadEnd(this.selectedMesh);
+          }
+        },
+      }));
   }
 
   /**
@@ -46,6 +151,9 @@ export class Selector {
     return this.selectedMesh;
   }
 
+  setSelectedMesh(mesh : THREE.Mesh) {
+    this.selectedMesh = mesh;
+  }
   /**
     * Method returns the mesh hit by a raycast
     * Provided with a bool to check whether any mesh
@@ -58,26 +166,10 @@ export class Selector {
     this.rayCaster.setFromCamera(
       { x : 0, y : 0 },
       this.camera,
-    ); 
-
-    
-    
+    );
 
     // Get array of intersected objects
     const intersects = this.rayCaster.intersectObjects(this.scene.children);
-
-    // Update the crosshair
-    //const scale = 2;
-    //const pos = this.camera.getWorldDirection().normalize().multiplyScalar(scale);
-    //this.crosshair.position.set(pos.x, pos.y, pos.z);
-
-    const dir = this.camera.getWorldDirection().normalize();
-    const initial = new THREE.Vector3(0,0,1);
-
-    const theta = Math.acos(dir.dot(initial));
-
-    // this.crosshair.
-    
 
     // Check if raycaster intersects with a mesh
     if (intersects[0] && intersects[0].object instanceof THREE.Mesh) {
@@ -101,24 +193,72 @@ export class Selector {
     }
   }
 
+  startMeshMove(movingMesh : THREE.Mesh) {
+    /*if (this.selectedMesh == movingMesh) {
+      this.isMoving = true;
+    }*/
+    this.isMoving = true;
+    this.movingMesh = movingMesh;
+  }
+
+  meshMove(delta: number) {
+    if (this.isMoving && this.movingMesh) {
+      // Make selected mesh translucent
+      (this.movingMesh.material as THREE.MeshPhongMaterial).opacity = 0.7;
+
+      // Set arbitrary scale for now
+      const scale = 2;
+      const dir = this.camera.getWorldDirection().multiplyScalar(scale);
+      this.movingMesh.position.set(dir.x, dir.y, dir.z);
+    }
+  }
+
+  endMeshMove (movingMesh : THREE.Mesh) {
+    if (this.movingMesh) {
+      // Set the selected mesh's opacity back to 1.0
+      (this.movingMesh.material as THREE.MeshPhongMaterial).opacity = 1.0;
+
+      // Set the moving flag to false
+      this.isMoving = false;
+      this.movingMesh = undefined;
+
+      // Now we project this mesh into the world
+      this.startProjection();
+    }
+  }
+
+  startProjection() {
+    const moveScale = 1/20;
+    // Get the direction of the camera and scale it by scalar factor
+    this.projectionDirection = this.camera.getWorldDirection().multiplyScalar(moveScale);
+
+    this.isProjecting = true;
+    this.projectingMesh = this.selectedMesh;
+  }
+
   /**
    * Project mesh along camera vector
    */
-  projectMesh() {
-    if (this.selectedMesh) {
-      // Temporary move scale variable - tie it more to world representation?
-      const moveScale = 1/20;
-
-      // Get the direction of the camera and scale it by scalar factor
-      const dir = this.camera.getWorldDirection().multiplyScalar(moveScale);
-
-      if (this.selectedMesh.position.length() < 4) {
+  projectMesh(delta: number) {
+    if (this.isProjecting && this.projectingMesh) {
+      if (this.projectingMesh.position.length() < 4) {
         // Add the direction vector onto the selected mesh's position
-        this.selectedMesh.position.add(dir);
+        this.projectingMesh.position.add(this.projectionDirection);
       } else {
         // Call the callback function 'on complete'
-        this.onMeshProjectionComplete();
+        this.endProjection();
       }
     }
+  }
+
+  endProjection() {
+    this.isProjecting = false;
+    this.projectingMesh = undefined;
+  }
+
+  update(delta: number) {
+    this.updateSelectedMesh();
+    this.projectMesh(delta);
+    this.meshMove(delta);
   }
 }

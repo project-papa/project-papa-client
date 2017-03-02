@@ -5,6 +5,8 @@ import { Shape, Sphere, Torus, Icosahedron, Cylinder, Box, Tetrahedron, Octahedr
 import { Selector } from 'src/selector';
 import { LiveLoopName, EffectName } from './generation/directory';
 import createReticle from './reticle';
+import { LibraryLoopSpawner } from 'src/libraryloopspawner';
+
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
 
@@ -27,6 +29,12 @@ export class World {
   private shapes: Array<Shape> = [];
 
   /**
+   * A separate array of live loop shapes is also maintained
+   * This allows them to be selected based on gesture
+   */
+  private liveloopShapes : Array<LiveLoopShape> = [];
+
+  /**
    * Lights associated with the world.
    * NOTE: We simply use three's implementations of lights as
    * we need not carry around any additional information (yet).
@@ -40,6 +48,12 @@ export class World {
    */
   private crosshair : THREE.Mesh;
 
+  /**
+   * Spawner that managers Library of shapes that will
+   * represent live loops in tray
+   */
+  private librarySpawner : LibraryLoopSpawner;
+
   constructor() {
     // Basic set up of scene, camera, and renderer:
     this.scene = new THREE.Scene();
@@ -51,7 +65,7 @@ export class World {
         color: 0xffffff,
         opacity: 0.5,
         transparent: true,
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
       }),
 		);
     this.crosshair.position.z = -2;
@@ -73,34 +87,72 @@ export class World {
     this.vrEnvironment.init();
     this.vrEnvironment.setSize(window.innerWidth, window.innerHeight);
 
+    // Set up the spawner for the shapes
+    this.librarySpawner = new LibraryLoopSpawner(this.scene);
+
     // Set up the Selector by passing it the scene and camera
     this.shapeSelector = new Selector(
       this.camera,
       this.scene,
       this.crosshair,
       (mesh : THREE.Mesh) => { /* On mesh selection */
-        // TEMPORARY - For demonstration purposes
-        if ((mesh as THREE.Mesh).geometry instanceof THREE.BoxGeometry) {
+        // Colour the mesh appropriately
+        if (mesh.userData.isLiveLoop || mesh.userData.isLibraryLoop) {
           (mesh.material as THREE.MeshPhongMaterial).color.set(Colours.getBoxSelected());
         }
-      }, (mesh: THREE.Mesh) => { /* On mesh deselection */
-        // TEMPORARY - For demonstration purposes
-        if ((mesh as THREE.Mesh).geometry instanceof THREE.BoxGeometry) {
+      }, (mesh : THREE.Mesh) => { /* On mesh deselection */
+        if (mesh.userData.isLiveLoop || mesh.userData.isLibraryLoop) {
           (mesh.material as THREE.MeshPhongMaterial).color.set(Colours.getBoxDefault());
         }
-      }, () => { /* On mesh having been projected into the world */
-        const selectedMesh = this.shapeSelector.getSelectedMesh();
-        if (selectedMesh) {
-          if (!selectedMesh.userData.isProjected) {
-            const selectedShape = this.shapes[selectedMesh.userData.id];
-            selectedMesh.userData.isProjected = true;
+      }, (mesh : THREE.Mesh) => { /* On fist start */
+        // Check the selected mesh has associated live loop
+        if (mesh.userData.isLiveLoop) {
+          this.shapeSelector.startMeshMove(mesh);
+        } else if (mesh.userData.isLibraryLoop) {
+          // Get the shape from the mesh
+          const selectedShape = this.librarySpawner.shapelibrary[mesh.userData.id];
 
-            console.log('we are projected!');
-            const dnbShape = this.startLiveLoop('dnb', selectedShape);
-            setTimeout(() => {
-              this.stopLiveLoop(dnbShape);
-            }, 5000);
-          }
+          console.log(selectedShape);
+          // Spawn a new live loop
+          const newLiveLoop = this.librarySpawner.spawnNewLiveLoopShape(selectedShape);
+          newLiveLoop.shape.mesh.userData.id = this.liveloopShapes.length;
+
+          this.liveloopShapes.push(newLiveLoop);
+          this.scene.add(newLiveLoop.shape.mesh);
+          this.shapeSelector.startMeshMove(newLiveLoop.shape.mesh);
+        }
+      }, (mesh : THREE.Mesh) => { /* On fist end */
+        if (mesh.userData.isLiveLoop) {
+          this.shapeSelector.endMeshMove(mesh);
+        }
+      }, (mesh : THREE.Mesh) => { /* On wave in start */
+        console.log('wave in start');
+        // TODO: Alter effects...
+        // TODO: ...
+      }, (mesh : THREE.Mesh) => { /* On wave in end */
+        console.log('wave in end');
+        // TODO: Alter effects...
+        // TODO: ...
+      }, (mesh : THREE.Mesh) => { /* On wave out start */
+        console.log('wave out start');
+        // TODO: Alter effects...
+        // TODO: ...
+      }, (mesh : THREE.Mesh) => { /* On wave out end */
+        console.log('wave out end');
+        // TODO: Alter effects...
+        // TODO: ...
+      }, (mesh : THREE.Mesh) => { /* On spread start */
+        console.log('spread start');
+        // Maybe this is empty...?
+      }, (mesh : THREE.Mesh) => { /* On spread end */
+        console.log('spread end');
+        if (mesh.userData.isLiveLoop) {
+          const selectedShape = this.liveloopShapes[mesh.userData.id];
+          // End the liveloop's playing
+          selectedShape.stop();
+
+          // Delete the mesh from the world
+          // TODO: ...
         }
       },
     );
@@ -176,77 +228,17 @@ export class World {
       new THREE.CylinderGeometry(10, 10, 0.5, 32, 32),
       new THREE.MeshPhongMaterial({ color: 0xffffff, opacity: 0.2, transparent: true }),
     );
-
     cylinder.getMesh().position.set(0, -5, 0);
-
     // Add the shape and mesh to their respective arrays:
     this.shapes.push(cylinder);
     this.scene.add(cylinder.getMesh());
-
-    // TEMPORARY
-    // Add a box here...
-
-    const box = new Box(
-      new THREE.BoxGeometry(0.5, 0.5, 0.5),
-      new THREE.MeshPhongMaterial({ color: 0x00ffff, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
-    );
-    box.getMesh().position.set(0, -0.7, -1.5);
-    this.addShape(box);
-
-    const tetrahedron = new Tetrahedron(
-      new THREE.TetrahedronGeometry(0.5),
-      new THREE.MeshPhongMaterial({ color: 0xff6600, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
-    );
-<<<<<<< HEAD
-    tetrahedron.getMesh().position.set(1.5, -0.7, 0);
-    this.addShape(tetrahedron);
-
-    const octahedron = new Octahedron(
-      new THREE.OctahedronGeometry(0.4, 0),
-      new THREE.MeshPhongMaterial({ color: 0xffff00, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
-    );
-    octahedron.getMesh().position.set(-1.5, -0.5, 0);
-    this.addShape(octahedron);
-
-    const icos = new Icosahedron(
-      new THREE.IcosahedronGeometry(0.5, 0),
-      new THREE.MeshPhongMaterial({ color: 0xff00ff, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
-    );
-    icos.getMesh().position.set(1.4, -1, -1.4);
-    this.addShape(icos);
-
-    const dodecahedron = new Dodecahedron(
-      new THREE.DodecahedronGeometry(0.4, 0),
-      new THREE.MeshPhongMaterial({ color: 0x66ff33, specular: 0x69bccc, shininess: 10, shading: THREE.FlatShading, opacity: 0.8, transparent: true }),
-    );
-    dodecahedron.getMesh().position.set(-1.2, -0.7, -1.2);
-    this.addShape(dodecahedron);
-=======
-    box.getMesh().position.set(1, 0, -1);
-    // Include some user data to work out shape from mesh
-    box.getMesh().userData = { id: this.shapes.length, isProjected: false };
-    this.shapes.push(box);
-    this.scene.add(box.getMesh());
-
-    const box2 = new Box(
-      new THREE.BoxGeometry(1, 1, 1),
-      new THREE.MeshPhongMaterial({ color: 0x65a6b2, specular: 0x69bccc, shininess: 10 }),
-    );
-    box2.getMesh().position.set(-1, 0, -1);
-    // Include some user data to work out shape from mesh
-    box2.getMesh().userData = { id: this.shapes.length, isProjected: false };
-    this.shapes.push(box2);
-    this.scene.add(box2.getMesh());
->>>>>>> 2c36072... Added more selector code
   }
 
   /**
    * Update the objects in the world
    */
   update(delta: number) {
-    // TODO: Do something more maintainable about these function calls
-    /* this.shapeSelector.updateSelectedMesh();
-     this.shapeSelector.projectMesh();*/
+    this.shapeSelector.update(delta);
   }
 
   /**
