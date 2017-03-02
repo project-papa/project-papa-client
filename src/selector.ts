@@ -11,33 +11,28 @@ export class Selector {
 
   // Represents the currently selected mesh
   // Note may be undefined (i.e. no mesh selected)
-  private selectedMesh? : THREE.Mesh;
+  private selectedObject? : THREE.Object3D;
 
   // Functions for callbacks on mesh selection and deselection
-  selectMesh : (mesh : THREE.Mesh) => void;
-  deselectMesh : (mesh : THREE.Mesh) => void;
+  selectObject: (object: THREE.Object3D) => void;
+  deselectObject: (object: THREE.Object3D) => void;
 
   // Functions for callbacks on fist gestures
-  onFistStart: (mesh : THREE.Mesh) => void;
-  onFistEnd: (mesh : THREE.Mesh) => void;
+  onFistStart: (object: THREE.Object3D) => void;
+  onFistEnd: (object: THREE.Object3D) => void;
 
   // Functions for callbacks on wave gestures
-  onWaveInStart: (mesh : THREE.Mesh) => void;
-  onWaveInEnd: (mesh : THREE.Mesh) => void;
+  onWaveInStart: (object: THREE.Object3D) => void;
+  onWaveInEnd: (object: THREE.Object3D) => void;
 
-  onWaveOutStart: (mesh : THREE.Mesh) => void;
-  onWaveOutEnd: (mesh : THREE.Mesh) => void;
+  onWaveOutStart: (object: THREE.Object3D) => void;
+  onWaveOutEnd: (object: THREE.Object3D) => void;
 
   // Functions for callbacks on spread gesture
-  onSpreadStart: (mesh : THREE.Mesh) => void;
-  onSpreadEnd: (mesh : THREE.Mesh) => void;
+  onSpreadStart: (object: THREE.Object3D) => void;
+  onSpreadEnd: (object: THREE.Object3D) => void;
 
-  // Properties regarding moving and projecting the mesh
-  private isMoving = false;
-  private isProjecting = false;
-  private projectingMesh? : THREE.Mesh;
-  private projectionDirection = new THREE.Vector3(0, 0, 0);
-  private movingMesh? : THREE.Mesh;
+  private objectsToCheck: THREE.Object3D[] = [];
 
   // Public methods
 
@@ -47,23 +42,23 @@ export class Selector {
    */
   constructor(camera: THREE.Camera,
               scene: THREE.Scene,
-              onMeshSelected: (mesh: THREE.Mesh) => void = voidFunction,
-              onMeshDeselected: (mesh: THREE.Mesh) => void = voidFunction,
-              onFistStart: (mesh: THREE.Mesh) => void = voidFunction,
-              onFistEnd: (mesh: THREE.Mesh) => void = voidFunction,
-              onWaveInStart: (mesh: THREE.Mesh) => void = voidFunction,
-              onWaveInEnd: (mesh: THREE.Mesh) => void = voidFunction,
-              onWaveOutStart: (mesh: THREE.Mesh) => void = voidFunction,
-              onWaveOutEnd: (mesh: THREE.Mesh) => void = voidFunction,
-              onSpreadStart: (mesh: THREE.Mesh) => void = voidFunction,
-              onSpreadEnd: (mesh: THREE.Mesh) => void = voidFunction) {
+              onObjectSelected: (mesh: THREE.Object3D) => void = voidFunction,
+              onObjectDeselected: (mesh: THREE.Object3D) => void = voidFunction,
+              onFistStart: (mesh: THREE.Object3D) => void = voidFunction,
+              onFistEnd: (mesh: THREE.Object3D) => void = voidFunction,
+              onWaveInStart: (mesh: THREE.Object3D) => void = voidFunction,
+              onWaveInEnd: (mesh: THREE.Object3D) => void = voidFunction,
+              onWaveOutStart: (mesh: THREE.Object3D) => void = voidFunction,
+              onWaveOutEnd: (mesh: THREE.Object3D) => void = voidFunction,
+              onSpreadStart: (mesh: THREE.Object3D) => void = voidFunction,
+              onSpreadEnd: (mesh: THREE.Object3D) => void = voidFunction) {
     this.camera = camera;
     this.scene = scene;
 
     this.rayCaster = new THREE.Raycaster();
 
-    this.selectMesh = onMeshSelected;
-    this.deselectMesh = onMeshDeselected;
+    this.selectObject = onObjectSelected;
+    this.deselectObject = onObjectDeselected;
 
     // Initialize callback functions for gestures
     this.onFistStart = onFistStart;
@@ -81,14 +76,14 @@ export class Selector {
       .subscribe(controls.listenPose({
         start: () => {
           // Check we have selected a mesh first
-          if (this.selectedMesh) {
-            this.onFistStart(this.selectedMesh);
+          if (this.selectedObject) {
+            this.onFistStart(this.selectedObject);
           }
         },
         finish: () => {
           // Check we have selected a mesh first
-          if (this.selectedMesh) {
-            this.onFistEnd(this.selectedMesh);
+          if (this.selectedObject) {
+            this.onFistEnd(this.selectedObject);
           }
         },
       }));
@@ -98,14 +93,14 @@ export class Selector {
       .subscribe(controls.listenPose({
         start: () => {
           // Check we have selected a mesh
-          if (this.selectedMesh) {
-            this.onWaveInStart(this.selectedMesh);
+          if (this.selectedObject) {
+            this.onWaveInStart(this.selectedObject);
           }
         },
         finish: () => {
           // Check we have selected a mesh first
-          if (this.selectedMesh) {
-            this.onWaveInEnd(this.selectedMesh);
+          if (this.selectedObject) {
+            this.onWaveInEnd(this.selectedObject);
           }
         },
       }));
@@ -115,14 +110,14 @@ export class Selector {
       .subscribe(controls.listenPose({
         start: () => {
           // Check we have selected a mesh
-          if (this.selectedMesh) {
-            this.onWaveOutStart(this.selectedMesh);
+          if (this.selectedObject) {
+            this.onWaveOutStart(this.selectedObject);
           }
         },
         finish: () => {
           // Check we have selected a mesh first
-          if (this.selectedMesh) {
-            this.onWaveOutEnd(this.selectedMesh);
+          if (this.selectedObject) {
+            this.onWaveOutEnd(this.selectedObject);
           }
         },
       }));
@@ -132,35 +127,49 @@ export class Selector {
       .subscribe(controls.listenPose({
         start: () => {
           // Check we have selected a mesh
-          if (this.selectedMesh) {
-            this.onSpreadStart(this.selectedMesh);
+          if (this.selectedObject) {
+            this.onSpreadStart(this.selectedObject);
           }
         },
         finish: () => {
           // Check we have selected a mesh first
-          if (this.selectedMesh) {
-            this.onSpreadEnd(this.selectedMesh);
+          if (this.selectedObject) {
+            this.onSpreadEnd(this.selectedObject);
           }
         },
       }));
   }
 
+  checkForObject(object: THREE.Object3D) {
+    if (!this.objectsToCheck.includes(object)) {
+      this.objectsToCheck.push(object);
+    }
+  }
+
+  stopCheckingForObject(object: THREE.Object3D) {
+    const objectIndex = this.objectsToCheck.indexOf(object);
+
+    if (objectIndex !== -1) {
+      this.objectsToCheck.splice(objectIndex, 1);
+    }
+  }
+
   /**
-   * Returns the currently selected Mesh
+   * Returns the currently selected Object3D
    */
   getSelectedMesh() {
-    return this.selectedMesh;
+    return this.selectedObject;
   }
 
   setSelectedMesh(mesh : THREE.Mesh) {
-    this.selectedMesh = mesh;
+    this.selectedObject = mesh;
   }
   /**
-    * Method returns the mesh hit by a raycast
-    * Provided with a bool to check whether any mesh
+    * Method returns the Object3D hit by a raycast
+    * Provided with a bool to check whether any Object3D
     * was hit at all
   */
-  updateSelectedMesh() {
+  updateSelectedObject() {
     // Update picking ray with camera and position
     // Position (0,0) casts ray from centre of screen
     // This seems to work fine for now
@@ -170,31 +179,27 @@ export class Selector {
     );
 
     // Get array of intersected objects
-    const intersects = this.rayCaster.intersectObjects(this.scene.children);
+    const intersects = this.rayCaster.intersectObjects(this.objectsToCheck);
 
-    // Check if raycaster intersects with a mesh
-    if (intersects[0] && intersects[0].object instanceof THREE.Mesh) {
-      if (this.selectedMesh) {
-        // Check if the mesh is not the one already selected
-        if (intersects[0].object as THREE.Mesh !== this.selectedMesh) {
-          // Deselect the mesh and update the selected mesh to the new one
-          this.deselectMesh(this.selectedMesh);
-          this.selectedMesh = intersects[0].object as THREE.Mesh;
-          this.selectMesh(this.selectedMesh);
+    // Check if raycaster intersects
+    if (intersects[0]) {
+      if (this.selectedObject) {
+        // Check if the Object3D is not the one already selected
+        if (intersects[0].object !== this.selectedObject) {
+          // Deselect the Object3D and update the selected Object3D to the new one
+          this.deselectObject(this.selectedObject);
+          this.selectedObject = intersects[0].object;
+          this.selectObject(this.selectedObject);
         }
       } else {
-        this.selectedMesh = intersects[0].object as THREE.Mesh;
-        this.selectMesh(this.selectedMesh);
+        this.selectedObject = intersects[0].object;
+        this.selectObject(this.selectedObject);
       }
-    } else { // No intersection with a mesh
-      if (this.selectedMesh !== undefined) {
-        this.deselectMesh(this.selectedMesh);
-        this.selectedMesh = undefined;
+    } else { // No intersection with a Object3D
+      if (this.selectedObject !== undefined) {
+        this.deselectObject(this.selectedObject);
+        this.selectedObject = undefined;
       }
     }
-  }
-
-  update(delta: number) {
-    this.updateSelectedMesh();
   }
 }

@@ -39,7 +39,6 @@ export class World {
   constructor() {
     // Basic set up of scene, camera, and renderer:
     this.scene = new THREE.Scene();
-    this.subscriptionsSet = new SubscriptionsSet(this.scene);
 
     // NOTE: arguments to perspective camera are:
     // Field of view, aspect ratio, near and far clipping plane
@@ -59,6 +58,7 @@ export class World {
 
     // Set up the Selector by passing it the scene and camera
     this.selectListener = new SelectListener(this.camera, this.scene);
+    this.subscriptionsSet = new SubscriptionsSet(this.scene, this.selectListener.selector);
   }
 
   // Public methods:
@@ -110,6 +110,13 @@ export class World {
    */
   addSubscriptionForEntity: SubscriptionsSet['addSubscriptionForEntity'] = (entity, subscription) => {
     this.subscriptionsSet.addSubscriptionForEntity(entity, subscription);
+  }
+
+  /**
+   * Adds an object to be checked for selections that will stop checking when the entity is removed
+   */
+  addSelectorObject: SubscriptionsSet['addSelectorObject'] = (entity, object) => {
+    this.subscriptionsSet.addSelectorObject(entity, object);
   }
 
   /**

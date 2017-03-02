@@ -32,6 +32,7 @@ export default class LiveLoopEntity implements Entity {
 
   onAdd(world: World) {
     world.addObjectForEntity(this, this.mesh);
+    world.addSelectorObject(this, this.mesh);
     this.liveloop = new LiveLoop(this.type);
     world.addSubscriptionForEntity(
       this,

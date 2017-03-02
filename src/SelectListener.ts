@@ -13,46 +13,46 @@ interface DeselectionEvent {
 type SelectListenerEvent = SelectionEvent | DeselectionEvent;
 
 /**
- * Listens for selection of meshes activated by the camera looking at a mesh.
+ * Listens for selection of objectes activated by the camera looking at a object.
  */
 export default class SelectListener {
   selector: Selector;
-  meshesToSubjects: WeakMap<THREE.Mesh, Subject<SelectListenerEvent>> = new WeakMap();
+  objectsToSubjects: WeakMap<THREE.Object3D, Subject<SelectListenerEvent>> = new WeakMap();
 
   constructor(camera: THREE.Camera, scene: THREE.Scene) {
     this.selector = new Selector(
       camera,
       scene,
-      mesh => this.onSelect(mesh),
-      mesh => this.onDeselect(mesh),
+      object => this.onSelect(object),
+      object => this.onDeselect(object),
     );
   }
 
-  observeSelections(mesh: THREE.Mesh) {
-    return this.getMeshSubject(mesh).asObservable();
+  observeSelections(object: THREE.Object3D) {
+    return this.getObjectSubject(object).asObservable();
   }
 
-  getMeshSubject(mesh: THREE.Mesh) {
-    if (!this.meshesToSubjects.has(mesh)) {
-      this.meshesToSubjects.set(mesh, new Subject());
+  getObjectSubject(object: THREE.Object3D) {
+    if (!this.objectsToSubjects.has(object)) {
+      this.objectsToSubjects.set(object, new Subject());
     }
 
-    return this.meshesToSubjects.get(mesh)!;
+    return this.objectsToSubjects.get(object)!;
   }
 
-  onSelect(mesh: THREE.Mesh) {
-    this.getMeshSubject(mesh).next({
+  onSelect(object: THREE.Object3D) {
+    this.getObjectSubject(object).next({
       selected: true,
     });
   }
 
-  onDeselect(mesh: THREE.Mesh) {
-    this.getMeshSubject(mesh).next({
+  onDeselect(object: THREE.Object3D) {
+    this.getObjectSubject(object).next({
       selected: false,
     });
   }
 
   update() {
-    this.selector.updateSelectedMesh();
+    this.selector.updateSelectedObject();
   }
 }

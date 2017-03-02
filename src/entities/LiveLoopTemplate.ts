@@ -51,6 +51,7 @@ export default class LiveLoopTemplate implements Entity {
   onAdd(world: World) {
     this.world = world;
     this.world.addObjectForEntity(this, this.mesh);
+    this.world.addSelectorObject(this, this.mesh);
     this.world.addSubscriptionForEntity(
       this,
       world.selectListener
