@@ -4,11 +4,11 @@ import { Subscription } from 'rxjs';
 import * as controls from 'src/controls';
 import * as utils from './utils';
 import THREE = require('three');
-import { LiveLoopName } from 'src/generation/directory';
+import { LiveLoopCatagory } from 'src/generation/directory';
 import LiveLoop from 'src/generation/LiveLoop';
 
 export interface LiveLoopEntityDefinition {
-  name: LiveLoopName;
+  type: LiveLoopCatagory;
   mesh: THREE.Mesh;
 }
 
@@ -17,7 +17,7 @@ export interface LiveLoopEntityDefinition {
  * The LiveLoopEntity actually plays the live loop.
  */
 export default class LiveLoopEntity implements Entity {
-  name: LiveLoopName;
+  type: LiveLoopCatagory;
   mesh: THREE.Mesh;
   liveloop: LiveLoop;
   subscription: Subscription;
@@ -27,13 +27,13 @@ export default class LiveLoopEntity implements Entity {
   world: World;
 
   constructor(definition: LiveLoopEntityDefinition) {
-    this.name = definition.name;
+    this.type = definition.type;
     this.mesh = definition.mesh;
   }
 
   onAdd(world: World) {
     world.scene.add(this.mesh);
-    this.liveloop = new LiveLoop(this.name);
+    this.liveloop = new LiveLoop(this.type);
     this.subscription = new Subscription();
     this.subscription.add(
       world.selectListener
