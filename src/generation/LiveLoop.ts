@@ -29,7 +29,7 @@ export default class LiveLoop {
 
     // Get a unique ID for this loop and generate the tag
     this.id = LiveLoop.idCount++;
-    this.tag = 'loop_' + this.id + '_' + this.name;
+    this.tag = `loop_${this.id}_${this.name}`;
 
     this.generateRuby();
 
@@ -80,24 +80,17 @@ export default class LiveLoop {
    * DOES NOT push the update to the coordinator.
    */
   public generateRuby() {
-
-    // Reset the output
-    this.outputRuby = this.rawRuby;
-
-    // Add the effect
-    this.outputRuby = 'with_fx :' + this.effectData.name // TODO add parameters
-                    + ' do\n' + this.outputRuby + '\nend\n';
-
-    // Add the vol wrapper
-    this.outputRuby = 'with_fx :level, amp: ' + this.volume
-                    + ' do\n' + this.outputRuby + '\nend\n';
-
-    // Add the oscilliscope data wrapper
-    this.outputRuby = 'with_fx \"sonic-pi-fx_scope_out\", scope_num: '
-                    + this.scopeNum + ' do\n' + this.outputRuby + '\nend\n';
-
-    // Add the final liveloop declaration
-    this.outputRuby = 'live_loop :'+this.tag+' do\n'+this.outputRuby+'\nend';
+    this.outputRuby = `
+      with_fx "sonic-pi-fx_scope_out", scope_num: ${this.scopeNum} do
+        live_loop :${this.tag} do
+          with_fx :level, amp: ${this.volume} do
+            with_fx :${this.effectData.name} do #TODO: add parameters
+              ${this.rawRuby}
+            end
+          end
+        end
+      end
+    `;
   }
 
   /**
