@@ -16,6 +16,7 @@ export interface LiveLoopEntityDefinition {
  * The LiveLoopEntity actually plays the live loop.
  */
 export default class LiveLoopEntity implements Entity {
+  name: LiveLoopName;
   mesh: THREE.Mesh;
   liveloop: LiveLoop;
   subscription: Subscription;
@@ -23,12 +24,13 @@ export default class LiveLoopEntity implements Entity {
   amplitude: number = 0.5;
 
   constructor(definition: LiveLoopEntityDefinition) {
-    this.liveloop = new LiveLoop(definition.name);
+    this.name = definition.name;
     this.mesh = definition.mesh;
   }
 
   onAdd(world: World) {
     world.scene.add(this.mesh);
+    this.liveloop = new LiveLoop(this.name);
     this.subscription = new Subscription();
     this.subscription.add(
       world.selectListener
