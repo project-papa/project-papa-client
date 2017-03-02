@@ -2,7 +2,7 @@ import { Entity } from './entity';
 import { World } from 'src/world';
 import { Subscription } from 'rxjs';
 import LiveLoopEntity, { LiveLoopEntityDefinition } from './LiveLoopEntity';
-import { LiveLoopName } from 'src/generation/directory';
+import { LiveLoopCatagory } from 'src/generation/directory';
 import * as controls from 'src/controls';
 import * as utils from './utils';
 import THREE = require('three');
@@ -14,7 +14,7 @@ interface LiveLoopTemplateDefinition {
     z: number;
   };
   createGeometry(): THREE.Geometry;
-  getLiveLoopName(): LiveLoopName;
+  getLiveLoopCatagory(): LiveLoopCatagory;
 }
 
 const liveLoopMaterial = new THREE.MeshPhongMaterial({
@@ -115,7 +115,7 @@ export default class LiveLoopTemplate implements Entity {
 
         this.world.addEntity(new LiveLoopEntity({
           mesh: liveLoopMesh,
-          name: this.definition.getLiveLoopName(),
+          type: this.definition.getLiveLoopCatagory(),
         }));
       }
 
@@ -140,8 +140,8 @@ const weirdTemplateDefinition: LiveLoopTemplateDefinition = {
   createGeometry() {
     return new THREE.TetrahedronGeometry(0.5);
   },
-  getLiveLoopName() {
-    return 'weird_vinyl';
+  getLiveLoopCatagory() {
+    return 'weird';
   },
 };
 
@@ -154,8 +154,8 @@ const ambientTemplateDefinition: LiveLoopTemplateDefinition = {
   createGeometry() {
     return new THREE.BoxGeometry(0.5, 0.5, 0.5);
   },
-  getLiveLoopName() {
-    return 'weird_vinyl';
+  getLiveLoopCatagory() {
+    return 'ambient';
   },
 };
 
@@ -168,12 +168,12 @@ const leadTemplateDefinition: LiveLoopTemplateDefinition = {
   createGeometry() {
     return new THREE.OctahedronGeometry(0.4, 0);
   },
-  getLiveLoopName() {
-    return 'weird_vinyl';
+  getLiveLoopCatagory() {
+    return 'lead';
   },
 };
 
-const percussiveTemplateDefinition: LiveLoopTemplateDefinition = {
+const drumsTemplateDefinition: LiveLoopTemplateDefinition = {
   position: {
     x: 1.4,
     y: -1,
@@ -182,8 +182,8 @@ const percussiveTemplateDefinition: LiveLoopTemplateDefinition = {
   createGeometry() {
     return new THREE.IcosahedronGeometry(0.5, 0);
   },
-  getLiveLoopName() {
-    return 'weird_vinyl';
+  getLiveLoopCatagory() {
+    return 'drums';
   },
 };
 
@@ -196,15 +196,15 @@ const bassTemplateDefinition: LiveLoopTemplateDefinition = {
   createGeometry() {
     return new THREE.DodecahedronGeometry(0.4, 0);
   },
-  getLiveLoopName() {
-    return 'weird_vinyl';
+  getLiveLoopCatagory() {
+    return 'bass';
   },
 };
 
 export const templateDefinitions = {
   weird: weirdTemplateDefinition,
   bass: bassTemplateDefinition,
-  percussive: percussiveTemplateDefinition,
+  drums: drumsTemplateDefinition,
   lead: leadTemplateDefinition,
   ambient: ambientTemplateDefinition,
 };

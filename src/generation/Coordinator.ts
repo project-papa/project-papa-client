@@ -10,15 +10,16 @@ export default class Coordinator {
   private outputRuby: string;
   private communicator: SonicPiCommunicator = new SonicPiCommunicator();
 
-  // Define the lists of loop types
-  private drums = getLoopsOfType('drums');
-  private ambient = getLoopsOfType('ambient');
-  private lead = getLoopsOfType('lead');
-  private bass = getLoopsOfType('bass');
-  private weird = getLoopsOfType('weird');
-
-  // TODO randomise order then maintain these as lists
-  // Also TODO - add where we are in the loop
+  // Define the lists of loop types, and the position in the array
+  private catagories: {
+    [P in LiveLoopCatagory]: LiveLoopName[];
+  } = {
+    drums: getLoopsOfType('drums'),
+    ambient: getLoopsOfType('ambient'),
+    lead: getLoopsOfType('lead'),
+    bass: getLoopsOfType('bass'),
+    weird: getLoopsOfType('weird'),
+  };
 
   // Store the free number slots
   private freeScopeNums = new Array();
@@ -39,6 +40,13 @@ export default class Coordinator {
     for(let i = 2; i < 128; i++) {
       this.freeScopeNums.push(i);
     }
+
+    // Randomise the loops order
+    this.catagories.drums.sort((a, b) => { return 0.5 - Math.random(); } );
+    this.catagories.ambient.sort((a, b) => { return 0.5 - Math.random(); } );
+    this.catagories.weird.sort((a, b) => { return 0.5 - Math.random(); } );
+    this.catagories.lead.sort((a, b) => { return 0.5 - Math.random(); } );
+    this.catagories.bass.sort((a, b) => { return 0.5 - Math.random(); } );
 
     // Define the header timing information
     this.header =
@@ -92,6 +100,19 @@ export default class Coordinator {
   }
 
   /**
+   * Gets a loop of a certain catagory and makes it so that loop will not
+   * be reused until all others of that catagory have been produced.
+   */
+  public getLoopOfType(catagory: LiveLoopCatagory) {
+
+    // Get a loop to use and move this to be MRU
+    const loop : LiveLoopName = this.catagories[catagory].shift()!;
+    this.catagories[catagory].push(loop);
+
+    return loop;
+  }
+
+  /**
    * Method to add a live loop to the playing music. Provide the name of the
    * loop and this method does lookup for the ruby code. Returns an ID unique
    * to the loop.
@@ -131,8 +152,8 @@ export default class Coordinator {
    */
   public generateRuby() {
 
-    // Define a string as the output ruby, and initialise with the header
-    this.outputRuby = this.header + '\n';
+    // Reset the output
+    this.outputRuby = '';
 
     // Add each loop construct
     for (const loop of this.activeLoops) {
@@ -146,6 +167,9 @@ export default class Coordinator {
         ${this.outputRuby}
       end
     `;
+
+    // Add the header
+    this.outputRuby = this.header + '\n' + this.outputRuby;
 
     // Stop all killed loops
     if (this.deadLoops.size !== 0) {

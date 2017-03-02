@@ -1,5 +1,5 @@
 import LiveLoop from './generation/LiveLoop';
-import { LiveLoopName } from './generation/directory';
+import { LiveLoopCatagory } from './generation/directory';
 
 import * as THREE from 'three';
 
@@ -207,8 +207,8 @@ export class LiveLoopShape {
 
   // Each live loop shape has a name, shape, and live loop.
   readonly liveloop : LiveLoop;
-  constructor(public name : LiveLoopName, public shape : Shape) {
-    this.liveloop = new LiveLoop(name);
+  constructor(public type : LiveLoopCatagory, public shape : Shape) {
+    this.liveloop = new LiveLoop(type);
   }
 
   stop() {

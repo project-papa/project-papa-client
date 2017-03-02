@@ -6,7 +6,7 @@ import SelectListener from 'src/SelectListener';
 import { Entity } from 'src/entities/entity';
 import LiveLoopTemplate, { templateDefinitions } from 'src/entities/LiveLoopTemplate';
 import LiveLoopEntity, { LiveLoopEntityDefinition } from 'src/entities/LiveLoopEntity';
-import { LiveLoopName } from './generation/directory';
+import { LiveLoopCatagory } from './generation/directory';
 import createReticle from './reticle';
 
 import VrEnvironment from './VrEnvironment';
@@ -146,7 +146,7 @@ export class World {
     this.addEntity(new LiveLoopTemplate(templateDefinitions.ambient));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.lead));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.bass));
-    this.addEntity(new LiveLoopTemplate(templateDefinitions.percussive));
+    this.addEntity(new LiveLoopTemplate(templateDefinitions.drums));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.weird));
   }
 
