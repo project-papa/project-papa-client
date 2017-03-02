@@ -21,7 +21,7 @@ export class Selector {
    * Constructor takes a camera to set up raytracer
    * and scene from which meshes can be selected
    */
-  constructor(camera : THREE.PerspectiveCamera,
+  constructor(camera : THREE.Camera,
                 scene : THREE.Scene,
                 onMeshSelected : (mesh : THREE.Mesh) => void,
                 onMeshDeselected : (mesh : THREE.Mesh) => void,
