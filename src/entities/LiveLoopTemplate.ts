@@ -32,7 +32,6 @@ const liveLoopMaterial = new THREE.MeshPhongMaterial({
  */
 export default class LiveLoopTemplate implements Entity {
   mesh: THREE.Mesh;
-  subscription: Subscription;
   selected: boolean = false;
   definition: LiveLoopTemplateDefinition;
   meshToAdd: THREE.Mesh | null = null;
@@ -51,14 +50,15 @@ export default class LiveLoopTemplate implements Entity {
 
   onAdd(world: World) {
     this.world = world;
-    world.scene.add(this.mesh);
-    this.subscription = new Subscription();
-    this.subscription.add(
+    this.world.addObjectForEntity(this, this.mesh);
+    this.world.addSubscriptionForEntity(
+      this,
       world.selectListener
         .observeSelections(this.mesh)
         .subscribe(event => this.selected = event.selected),
     );
-    this.subscription.add(
+    this.world.addSubscriptionForEntity(
+      this,
       controls.controlEvents
         .filter(controls.eventIs.fist)
         .subscribe(
@@ -93,16 +93,9 @@ export default class LiveLoopTemplate implements Entity {
     }
   }
 
-  onRemove(world: World) {
-    world.scene.remove(this.mesh);
-    this.subscription.unsubscribe();
-    this.finishMeshAdd(false);
-  }
-
   startMeshAdd() {
     this.meshToAdd = this.createMesh();
-    console.log(this.meshToAdd === this.mesh);
-    this.world.scene.add(this.meshToAdd);
+    this.world.addObjectForEntity(this, this.meshToAdd);
   }
 
   finishMeshAdd(addLiveLoop = true) {
