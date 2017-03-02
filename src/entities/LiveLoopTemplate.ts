@@ -3,7 +3,6 @@ import { World } from 'src/world';
 import { Subscription } from 'rxjs';
 import { controlEvents, eventIs } from 'src/controls';
 import THREE = require('three');
-import { LiveLoopName } from 'src/generation/directory';
 
 interface LiveLoopTemplateDefinition {
   position: {
@@ -72,9 +71,9 @@ export default class LiveLoopTemplate implements Entity {
 
 const weirdTemplateDefinition: LiveLoopTemplateDefinition = {
   position: {
-    x: 0,
+    x: 1.5,
     y: -0.7,
-    z: -1.5,
+    z: 0,
   },
   createGeometry() {
     return new THREE.TetrahedronGeometry(0.5);
@@ -83,9 +82,9 @@ const weirdTemplateDefinition: LiveLoopTemplateDefinition = {
 
 const ambientTemplateDefinition: LiveLoopTemplateDefinition = {
   position: {
-    x: 1.2,
+    x: 0,
     y: -0.7,
-    z: -1.2,
+    z: -1.5,
   },
   createGeometry() {
     return new THREE.BoxGeometry(0.5, 0.5, 0.5);
@@ -94,8 +93,8 @@ const ambientTemplateDefinition: LiveLoopTemplateDefinition = {
 
 const leadTemplateDefinition: LiveLoopTemplateDefinition = {
   position: {
-    x: 1.5,
-    y: -0.7,
+    x: -1.5,
+    y: -0.5,
     z: 0,
   },
   createGeometry() {
@@ -105,9 +104,9 @@ const leadTemplateDefinition: LiveLoopTemplateDefinition = {
 
 const percussiveTemplateDefinition: LiveLoopTemplateDefinition = {
   position: {
-    x: -1.2,
-    y: -0.7,
-    z: -1.2,
+    x: 1.4,
+    y: -1,
+    z: -1.4,
   },
   createGeometry() {
     return new THREE.IcosahedronGeometry(0.5, 0);
@@ -116,9 +115,9 @@ const percussiveTemplateDefinition: LiveLoopTemplateDefinition = {
 
 const bassTemplateDefinition: LiveLoopTemplateDefinition = {
   position: {
-    x: -1.5,
+    x: -1.2,
     y: -0.7,
-    z: 0,
+    z: -1.2,
   },
   createGeometry() {
     return new THREE.DodecahedronGeometry(0.4, 0);

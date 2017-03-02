@@ -5,6 +5,7 @@ import { Shape, Sphere, Torus, Icosahedron, Cylinder, Box, Tetrahedron, Octahedr
 import SelectListener from 'src/SelectListener';
 import { Entity } from 'src/entities/entity';
 import LiveLoopTemplate, { templateDefinitions } from 'src/entities/LiveLoopTemplate';
+import LiveLoopEntity, { LiveLoopEntityDefinition } from 'src/entities/LiveLoopEntity';
 import { LiveLoopName, EffectName } from './generation/directory';
 import createReticle from './reticle';
 import { LibraryLoopSpawner } from 'src/libraryloopspawner';
@@ -267,11 +268,20 @@ export class World {
     this.shapes.push(cylinder);
     this.scene.add(cylinder.getMesh());
 
-    this.addEntity(new LiveLoopTemplate(templateDefinitions.ambient));
+    const ambientTemplate = new LiveLoopTemplate(templateDefinitions.ambient);
+    this.addEntity(ambientTemplate);
     this.addEntity(new LiveLoopTemplate(templateDefinitions.lead));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.bass));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.percussive));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.weird));
+    /**
+     * Uncomment for example of adding an entity:
+     * const ambientEntityDef: LiveLoopEntityDefinition = {
+     * name: 'ambient_piano',
+     * mesh: ambientTemplate.mesh,
+     * };
+     * this.addEntity(new LiveLoopEntity(ambientEntityDef));
+     */
   }
 
   /**
