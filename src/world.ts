@@ -1,8 +1,11 @@
 import * as THREE from 'three';
 
 import { Colours } from 'src/colours';
-import { Shape, Sphere, Torus, Icosahedron, Cylinder, Box, Tetrahedron, Octahedron, Dodecahedron, LiveLoopShape, EffectShape } from 'src/shape';
-import { Selector } from 'src/selector';
+import { Shape, Sphere, Torus, Icosahedron, Cylinder, Box, Tetrahedron, Octahedron, Dodecahedron, LiveLoopShape } from 'src/shape';
+import SelectListener from 'src/SelectListener';
+import { Entity } from 'src/entities/entity';
+import LiveLoopTemplate, { templateDefinitions } from 'src/entities/LiveLoopTemplate';
+import LiveLoopEntity, { LiveLoopEntityDefinition } from 'src/entities/LiveLoopEntity';
 import { LiveLoopName, EffectName } from './generation/directory';
 import createReticle from './reticle';
 import { LibraryLoopSpawner } from 'src/libraryloopspawner';
@@ -17,10 +20,11 @@ export class World {
    * (set up at construction time):
    * NOTE: These are private members.
    */
-  private scene: THREE.Scene;
+  readonly scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
   private vrEnvironment: VrEnvironment;
+  private entities: Set<Entity> = new Set();
 
   /**
    * Each World will also keep track of what shapes are currently in it.
@@ -41,7 +45,7 @@ export class World {
    */
   private lights: Array<THREE.Light> = [];
 
-  private shapeSelector: Selector;
+  readonly selectListener: SelectListener;
 
   /**
    * Crosshair that helps user select shapes in the world
@@ -156,9 +160,44 @@ export class World {
         }
       },
     );
+    
+    // Note this was in conflict with above...
+    this.selectListener = new SelectListener(this.camera, this.scene);
   }
 
   // Public methods:
+
+  /**
+   * Add an entity to the world
+   *
+   * entity.onAdd will be called when the entity _is_ in the entity set
+   */
+  addEntity(entity: Entity) {
+    if (this.hasEntity(entity)) {
+      throw new Error('Cannot add an entity to a world twice');
+    }
+
+    this.entities.add(entity);
+    entity.onAdd(this);
+  }
+
+  /**
+   * Remove an entity from the world
+   *
+   * entity.onRemove will be called when the entity is _not_ in the entity set
+   */
+  removeEntity(entity: Entity) {
+    if (!this.hasEntity(entity)) {
+      throw new Error('Cannot remove an entity that is not in the world');
+    }
+
+    this.entities.delete(entity);
+    entity.onRemove(this);
+  }
+
+  hasEntity(entity: Entity) {
+    return this.entities.has(entity);
+  }
 
   /**
    * Add shape to world:
@@ -175,6 +214,17 @@ export class World {
    */
   startLiveLoop(name: LiveLoopName, shape: Shape) {
     const liveLoopShape = new LiveLoopShape(name, shape);
+    liveLoopShape.liveloop.oscilloscopeData().subscribe(
+      amplitude => {
+        // Calculate scaling factor from old and new amplitudes.
+        const oldAmp = liveLoopShape.shape.amplitude;
+        const factor = amplitude / oldAmp;
+        // Apply scaling.
+        liveLoopShape.shape.geometry.scale(factor, factor, factor);
+        // Update shape's amplitude.
+        liveLoopShape.shape.amplitude = amplitude;
+      },
+    );
   }
 
   /**
@@ -182,20 +232,6 @@ export class World {
    */
   stopLiveLoop(liveLoopShape: LiveLoopShape) {
     liveLoopShape.stop();
-  }
-
-  /**
-   * Add effect (by name and shape) to a particular live loop (by LiveLoopShape).
-   */
-  addEffect(name: EffectName, shape: Shape, liveLoopShape: LiveLoopShape) {
-    const effect = new EffectShape(name, shape, liveLoopShape);
-  }
-
-  /**
-   * Remove effect (by EffectShape) from a particular live loop.
-   */
-  removeEffect(effectShape: EffectShape) {
-    effectShape.remove();
   }
 
   /**
@@ -232,13 +268,31 @@ export class World {
     // Add the shape and mesh to their respective arrays:
     this.shapes.push(cylinder);
     this.scene.add(cylinder.getMesh());
+
+    const ambientTemplate = new LiveLoopTemplate(templateDefinitions.ambient);
+    this.addEntity(ambientTemplate);
+    this.addEntity(new LiveLoopTemplate(templateDefinitions.lead));
+    this.addEntity(new LiveLoopTemplate(templateDefinitions.bass));
+    this.addEntity(new LiveLoopTemplate(templateDefinitions.percussive));
+    this.addEntity(new LiveLoopTemplate(templateDefinitions.weird));
+    /**
+     * Uncomment for example of adding an entity:
+     * const ambientEntityDef: LiveLoopEntityDefinition = {
+     * name: 'ambient_piano',
+     * mesh: ambientTemplate.mesh,
+     * };
+     * this.addEntity(new LiveLoopEntity(ambientEntityDef));
+     */
   }
 
   /**
    * Update the objects in the world
    */
   update(delta: number) {
+    // This will eventually be removed due to the updated listener
     this.shapeSelector.update(delta);
+    
+    this.selectListener.update();
   }
 
   /**

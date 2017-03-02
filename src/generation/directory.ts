@@ -1,3 +1,4 @@
+// TODO add liveloops
 const liveLoops = {
   ambient_piano:
   `sync :metronome_4
@@ -46,20 +47,44 @@ export function getRubyForLiveLoop(name: LiveLoopName) {
   return liveLoops[name];
 }
 
-const effects = {
-  echo: {
+// TODO insert correct colours and add parameters
+const effects = [
+  {
+    name: 'level',
+    parameters: {},
+    colour: 0xffffff,
   },
-  whammy: {
+  {
+    name: 'reverb',
+    parameters: {
+      room: 0.85,
+    },
+    colour: 0xffffff,
   },
-  wobble: {
+  {
+    name: 'echo',
+    parameters: {},
+    colour: 0xffffff,
   },
-  reverb: {
-    room: 0.85,
+  {
+    name: 'wobble',
+    parameters: {},
+    colour: 0xffffff,
   },
-};
+  {
+    name: 'whammy',
+    parameters: {},
+    colour: 0xffffff,
+  },
+  {
+    name: 'hpf',
+    parameters: {},
+    colour: 0xffffff,
+  },
+];
 
 export type EffectName = keyof typeof effects;
 
-export function getParametersForEffect(name: EffectName) {
-  return new Map(Object.entries(effects[name]));
+export function getEffect(i : number) {
+  return effects[i];
 }

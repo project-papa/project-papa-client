@@ -1,28 +1,19 @@
-import Effect from './Effect';
 import Coordinator from './Coordinator';
-import { getRubyForLiveLoop, LiveLoopName } from './directory';
+import { getRubyForLiveLoop, LiveLoopName, getEffect } from './directory';
 
 export default class LiveLoop {
 
   private readonly rawRuby: string;
   private readonly name: string;
-  private volume: number;
+  private volume: number = 1;
   private outputRuby: string;
   private id: number;
   private tag: string;
+  private effectNum: number = 0;
+  private effectData = getEffect(0);
   private readonly scopeNum: number;
   private static idCount: number = 0;
   private static coordinator = new Coordinator();
-
-  /**
-   * Store a list of effects applied to the live loop.
-   * Note that there is a notion of hierarchy - effects at the beginning
-   * of the list will be applied first, with those that follow being applied
-   * in succession. Also store a map of ID ints to the effects stored, for
-   * easy lookup.
-   */
-  private effectsHeirarchy: Array<Effect>;
-  private activeEffects: Set<Effect>;
 
   public constructor(name: LiveLoopName) {
 
@@ -33,11 +24,7 @@ export default class LiveLoop {
 
     // Get a unique ID for this loop and generate the tag
     this.id = LiveLoop.idCount++;
-    this.tag = 'Loop_' + this.id + '_' + name;
-
-    // Initialise the internal store of the effects
-    this.effectsHeirarchy = [];
-    this.activeEffects = new Set<Effect>();
+    this.tag = 'loop_' + this.id + '_' + name;
 
     // Convert the ruby into the form of a loop
     this.rawRuby = 'live_loop :'+this.tag+' do\n'+rawRuby+'\nend';
@@ -51,73 +38,55 @@ export default class LiveLoop {
 
   public getScopeNum() { return this.scopeNum; }
 
-  public getActiveEffects() { return this.activeEffects; }
-
   public getRuby() { return this.outputRuby; }
 
+  public getEffectData() { return this.effectData; }
+
+  /**
+   * Set volume method that restricts any input into the range of 0-1
+   */
   public setVolume(v: number) {
-    // TODO sanity check v
-    this.volume = v;
+    if (v < 0) {
+      this.volume = 0;
+    } else if (v > 1) {
+      this.volume = 1;
+    } else {
+      this.volume = v;
+    }
   }
 
-  /**
-   * Takes an argument that is the name of a defined effect, and creates a new
-   * effect object. New effects are applied to the live loop last. Then Pushes
-   * the update to the coordinator, and return the ID.
-   */
-  public addEffectToSet(e: Effect) {
-
-    // Add it to the internal store
-    this.activeEffects.add(e);
-    this.effectsHeirarchy.push(e);
-
+  // TODO def an effectNum type in directory that is intrinsically in range 0-5
+  public nextEffect() {
+    this.effectNum = (this.effectNum + 1) % 6;
     this.generateAndPushRuby();
-
   }
 
-  /**
-   * Removes an effect with a specified ID (unique this this liveloop). Then
-   * pushes this update to the coordinator.
-   */
-  public removeEffectFromSet(e: Effect) {
-
-    if (!this.activeEffects.has(e)) {
-      throw new Error('Effect not present.');
-    }
-
-    // Get the index of the specified effect
-    const index = this.effectsHeirarchy.indexOf(e);
-
-    // Test if the effect was present
-    if (index < 0) {
-      throw new Error('Effect not present in hierarchy.');
-    }
-
-    // Remove the specified effect from both storage sections
-    this.effectsHeirarchy.splice(index, 1);
-    this.activeEffects.delete(e);
-
+  public prevEffect() {
+    this.effectNum = (this.effectNum - 1) % 6;
     this.generateAndPushRuby();
   }
 
   /**
-   * Adds each effect in turn to the underlying raw ruby code that defines this
-   * live loop. DOES NOT push the update to the coordinator.
+   * Adds the applied effect, volume, and osc data reader wrappers.
+   * DOES NOT push the update to the coordinator.
    */
   public generateRuby() {
 
     // Reset the output
     this.outputRuby = this.rawRuby;
 
-    // Add each effect in order
-    for(let i = 0; i < this.effectsHeirarchy.length; i++) {
-      this.outputRuby =
-        this.effectsHeirarchy[i].getRuby() + '\n' + this.outputRuby + '\nend';
-    }
+    // Get the information about the effect
+    this.effectData = getEffect(this.effectNum);
 
-    // TODO set vol wrapper
+    // Add the effect
+    this.outputRuby = 'with_fx :' + this.effectData.name // TODO add parameters
+                    + ' do\n' + this.outputRuby + '\nend\n';
 
-    // Add the  oscilliscope data wrapper
+    // Add the vol wrapper
+    this.outputRuby = 'with_fx :level, amp: ' + this.volume
+                    + ' do\n' + this.outputRuby + '\nend\n';
+
+    // Add the oscilliscope data wrapper
     this.outputRuby = 'with_fx \"sonic-pi-fx_scope_out\", scope_num: '
                     + this.scopeNum + ' do\n' + this.outputRuby + '\nend\n';
   }
