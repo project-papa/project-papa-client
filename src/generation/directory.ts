@@ -89,32 +89,38 @@ export function getLoopsOfType(l: LiveLoopCatagory) {
   return catagories[l];
 }
 
-const effects = [
+export const effects = [
   {
     name: 'level',
     parameters: {},
+    colour: 0xffffff,
   },
   {
     name: 'reverb',
     parameters: {
       room: 0.85,
     },
+    colour: 0xff6600,
   },
   {
     name: 'echo',
     parameters: {},
+    colour: 0x00ffff,
   },
   {
     name: 'wobble',
     parameters: {},
+    colour: 0x66ff33,
   },
   {
     name: 'whammy',
     parameters: {},
+    colour: 0xff00ff,
   },
   {
     name: 'hpf',
     parameters: {},
+    colour: 0xffff00,
   },
 ];
 

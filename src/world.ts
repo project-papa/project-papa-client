@@ -6,8 +6,9 @@ import SelectListener from 'src/SelectListener';
 import { Entity } from 'src/entities/entity';
 import LiveLoopTemplate, { templateDefinitions } from 'src/entities/LiveLoopTemplate';
 import LiveLoopEntity, { LiveLoopEntityDefinition } from 'src/entities/LiveLoopEntity';
-import { LiveLoopName } from './generation/directory';
+import { LiveLoopName, effects } from './generation/directory';
 import createReticle from './reticle';
+import LiveLoop from 'src/generation/liveloop';
 
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
@@ -108,6 +109,14 @@ export class World {
     this.shapes.push(shape);
   }
 
+  applyEffect(name: string, shape: Shape) {
+    for (const eff of effects) {
+      if (eff.name === name) {
+        (shape.material as THREE.MeshPhongMaterial).color.setHex(eff.colour);
+      }
+    }
+  }
+
   /**
    * Set up the physical environment itself.
   */
@@ -170,6 +179,14 @@ export class World {
 
     // Set up the environement itself (i.e. populate with shapes)
     this.setupEnvironment();
+
+    LiveLoop.globalOscilloscopeData().subscribe(
+      amplitude => {
+        // Amplitude: low-> blue, medium -> purple, high -> pink
+        const red = amplitude * 0x0000ff;
+        ((this.scene.getObjectByName('gridHelper') as THREE.GridHelper).material as THREE.LineBasicMaterial).color.setHex((red << 16) + 0x000050);
+      },
+    );
 
     this.vrEnvironment
       .createAnimator(delta => this.update(delta))
