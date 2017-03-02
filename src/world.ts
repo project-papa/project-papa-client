@@ -160,7 +160,7 @@ export class World {
         }
       },
     );
-    
+
     // Note this was in conflict with above...
     this.selectListener = new SelectListener(this.camera, this.scene);
   }
@@ -291,7 +291,6 @@ export class World {
   update(delta: number) {
     // This will eventually be removed due to the updated listener
     this.shapeSelector.update(delta);
-    
     this.selectListener.update();
   }
 
