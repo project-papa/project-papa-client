@@ -1,7 +1,10 @@
 import { Entity } from './entity';
 import { World } from 'src/world';
 import { Subscription } from 'rxjs';
-import { controlEvents, eventIs } from 'src/controls';
+import LiveLoopEntity, { LiveLoopEntityDefinition } from './LiveLoopEntity';
+import { LiveLoopName } from 'src/generation/directory';
+import * as controls from 'src/controls';
+import * as utils from './utils';
 import THREE = require('three');
 
 interface LiveLoopTemplateDefinition {
@@ -11,6 +14,7 @@ interface LiveLoopTemplateDefinition {
     z: number;
   };
   createGeometry(): THREE.Geometry;
+  getLiveLoopName(): LiveLoopName;
 }
 
 const liveLoopMaterial = new THREE.MeshPhongMaterial({
@@ -30,12 +34,13 @@ export default class LiveLoopTemplate implements Entity {
   mesh: THREE.Mesh;
   subscription: Subscription;
   selected: boolean = false;
+  definition: LiveLoopTemplateDefinition;
+  meshToAdd: THREE.Mesh | null = null;
+  world: World;
 
   constructor(definition: LiveLoopTemplateDefinition) {
-    this.mesh = new THREE.Mesh(
-      definition.createGeometry(),
-      liveLoopMaterial,
-    );
+    this.definition = definition;
+    this.mesh = this.createMesh();
 
     this.mesh.position.set(
       definition.position.x,
@@ -45,6 +50,7 @@ export default class LiveLoopTemplate implements Entity {
   }
 
   onAdd(world: World) {
+    this.world = world;
     world.scene.add(this.mesh);
     this.subscription = new Subscription();
     this.subscription.add(
@@ -53,19 +59,75 @@ export default class LiveLoopTemplate implements Entity {
         .subscribe(event => this.selected = event.selected),
     );
     this.subscription.add(
-      controlEvents
-        .filter(eventIs.fist)
-        .subscribe(event => {
-          if (this.selected) {
-            console.log('FIST ON ME!');
-          }
-        }),
+      controls.controlEvents
+        .filter(controls.eventIs.fist)
+        .subscribe(
+          controls.listenPose({
+            start: () => {
+              console.log('fist');
+              if (this.selected) {
+                this.startMeshAdd();
+
+                this.mesh.position.set(
+                  this.definition.position.x,
+                  this.definition.position.y,
+                  this.definition.position.z,
+                );
+              }
+            },
+            finish: () => {
+              this.finishMeshAdd();
+            },
+          }),
+        ),
     );
+  }
+
+  onUpdate(delta: number) {
+    if (this.meshToAdd) {
+      utils.projectMeshDistanceFromCamera(
+        this.world.camera,
+        this.meshToAdd,
+        3,
+      );
+    }
   }
 
   onRemove(world: World) {
     world.scene.remove(this.mesh);
     this.subscription.unsubscribe();
+    this.finishMeshAdd(false);
+  }
+
+  startMeshAdd() {
+    this.meshToAdd = this.createMesh();
+    console.log(this.meshToAdd === this.mesh);
+    this.world.scene.add(this.meshToAdd);
+  }
+
+  finishMeshAdd(addLiveLoop = true) {
+    if (this.meshToAdd) {
+      if (addLiveLoop) {
+        const liveLoopMesh = this.createMesh();
+        utils.setVectorFromVector(liveLoopMesh.position, this.meshToAdd.position);
+
+        this.world.scene.remove(this.meshToAdd);
+
+        this.world.addEntity(new LiveLoopEntity({
+          mesh: liveLoopMesh,
+          name: this.definition.getLiveLoopName(),
+        }));
+      }
+
+      this.meshToAdd = null;
+    }
+  }
+
+  createMesh() {
+    return new THREE.Mesh(
+      this.definition.createGeometry(),
+      liveLoopMaterial.clone(),
+    );
   }
 }
 
@@ -78,6 +140,9 @@ const weirdTemplateDefinition: LiveLoopTemplateDefinition = {
   createGeometry() {
     return new THREE.TetrahedronGeometry(0.5);
   },
+  getLiveLoopName() {
+    return 'weird_vinyl';
+  },
 };
 
 const ambientTemplateDefinition: LiveLoopTemplateDefinition = {
@@ -88,6 +153,9 @@ const ambientTemplateDefinition: LiveLoopTemplateDefinition = {
   },
   createGeometry() {
     return new THREE.BoxGeometry(0.5, 0.5, 0.5);
+  },
+  getLiveLoopName() {
+    return 'weird_vinyl';
   },
 };
 
@@ -100,6 +168,9 @@ const leadTemplateDefinition: LiveLoopTemplateDefinition = {
   createGeometry() {
     return new THREE.OctahedronGeometry(0.4, 0);
   },
+  getLiveLoopName() {
+    return 'weird_vinyl';
+  },
 };
 
 const percussiveTemplateDefinition: LiveLoopTemplateDefinition = {
@@ -111,6 +182,9 @@ const percussiveTemplateDefinition: LiveLoopTemplateDefinition = {
   createGeometry() {
     return new THREE.IcosahedronGeometry(0.5, 0);
   },
+  getLiveLoopName() {
+    return 'weird_vinyl';
+  },
 };
 
 const bassTemplateDefinition: LiveLoopTemplateDefinition = {
@@ -121,6 +195,9 @@ const bassTemplateDefinition: LiveLoopTemplateDefinition = {
   },
   createGeometry() {
     return new THREE.DodecahedronGeometry(0.4, 0);
+  },
+  getLiveLoopName() {
+    return 'weird_vinyl';
   },
 };
 

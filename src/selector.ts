@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import * as controls from 'src/controls';
 
+const voidFunction = () => undefined;
+
 export class Selector {
   // Private properties
   private rayCaster : THREE.Raycaster;
@@ -43,27 +45,18 @@ export class Selector {
    * Constructor takes a camera to set up raytracer
    * and scene from which meshes can be selected
    */
-<<<<<<< HEAD
-  constructor(camera : THREE.Camera,
-                scene : THREE.Scene,
-                onMeshSelected : (mesh : THREE.Mesh) => void,
-                onMeshDeselected : (mesh : THREE.Mesh) => void,
-                onMeshProjectionComplete : () => void) {
-=======
-  constructor(camera : THREE.PerspectiveCamera,
-              scene : THREE.Scene,
-              crosshair : THREE.Mesh,
-              onMeshSelected : (mesh : THREE.Mesh) => void,
-              onMeshDeselected : (mesh : THREE.Mesh) => void,
-              onFistStart : (mesh : THREE.Mesh) => void,
-              onFistEnd : (mesh : THREE.Mesh) => void,
-              onWaveInStart: (mesh : THREE.Mesh) => void,
-              onWaveInEnd : (mesh : THREE.Mesh) => void,
-              onWaveOutStart: (mesh : THREE.Mesh) => void,
-              onWaveOutEnd: (mesh : THREE.Mesh) => void,
-              onSpreadStart: (mesh : THREE.Mesh) => void,
-              onSpreadEnd: (mesh : THREE.Mesh) => void) {
->>>>>>> 23c4f865363e2104edb21ad7ecdefe4975b51a3f
+  constructor(camera: THREE.Camera,
+              scene: THREE.Scene,
+              onMeshSelected: (mesh: THREE.Mesh) => void = voidFunction,
+              onMeshDeselected: (mesh: THREE.Mesh) => void = voidFunction,
+              onFistStart: (mesh: THREE.Mesh) => void = voidFunction,
+              onFistEnd: (mesh: THREE.Mesh) => void = voidFunction,
+              onWaveInStart: (mesh: THREE.Mesh) => void = voidFunction,
+              onWaveInEnd: (mesh: THREE.Mesh) => void = voidFunction,
+              onWaveOutStart: (mesh: THREE.Mesh) => void = voidFunction,
+              onWaveOutEnd: (mesh: THREE.Mesh) => void = voidFunction,
+              onSpreadStart: (mesh: THREE.Mesh) => void = voidFunction,
+              onSpreadEnd: (mesh: THREE.Mesh) => void = voidFunction) {
     this.camera = camera;
     this.scene = scene;
 
@@ -201,72 +194,7 @@ export class Selector {
     }
   }
 
-  startMeshMove(movingMesh : THREE.Mesh) {
-    /*if (this.selectedMesh == movingMesh) {
-      this.isMoving = true;
-    }*/
-    this.isMoving = true;
-    this.movingMesh = movingMesh;
-  }
-
-  meshMove(delta: number) {
-    if (this.isMoving && this.movingMesh) {
-      // Make selected mesh translucent
-      (this.movingMesh.material as THREE.MeshPhongMaterial).opacity = 0.7;
-
-      // Set arbitrary scale for now
-      const scale = 2;
-      const dir = this.camera.getWorldDirection().multiplyScalar(scale);
-      this.movingMesh.position.set(dir.x, dir.y, dir.z);
-    }
-  }
-
-  endMeshMove (movingMesh : THREE.Mesh) {
-    if (this.movingMesh) {
-      // Set the selected mesh's opacity back to 1.0
-      (this.movingMesh.material as THREE.MeshPhongMaterial).opacity = 1.0;
-
-      // Set the moving flag to false
-      this.isMoving = false;
-      this.movingMesh = undefined;
-
-      // Now we project this mesh into the world
-      this.startProjection();
-    }
-  }
-
-  startProjection() {
-    const moveScale = 1/20;
-    // Get the direction of the camera and scale it by scalar factor
-    this.projectionDirection = this.camera.getWorldDirection().multiplyScalar(moveScale);
-
-    this.isProjecting = true;
-    this.projectingMesh = this.selectedMesh;
-  }
-
-  /**
-   * Project mesh along camera vector
-   */
-  projectMesh(delta: number) {
-    if (this.isProjecting && this.projectingMesh) {
-      if (this.projectingMesh.position.length() < 4) {
-        // Add the direction vector onto the selected mesh's position
-        this.projectingMesh.position.add(this.projectionDirection);
-      } else {
-        // Call the callback function 'on complete'
-        this.endProjection();
-      }
-    }
-  }
-
-  endProjection() {
-    this.isProjecting = false;
-    this.projectingMesh = undefined;
-  }
-
   update(delta: number) {
     this.updateSelectedMesh();
-    this.projectMesh(delta);
-    this.meshMove(delta);
   }
 }

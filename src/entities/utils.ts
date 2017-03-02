@@ -9,3 +9,6 @@ export function projectMeshDistanceFromCamera(camera: THREE.Camera, mesh: THREE.
   );
 }
 
+export function setVectorFromVector(to: THREE.Vector3, from: THREE.Vector3) {
+  to.set(from.x, from.y, from.z);
+}

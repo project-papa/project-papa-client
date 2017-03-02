@@ -12,7 +12,6 @@ export interface Shape {
   readonly geometry : THREE.Geometry;
   readonly material : THREE.Material;
   readonly mesh : THREE.Mesh;
-  amplitude : number;
 
   // Method exposes the mesh to be used by the World
   getMesh() : THREE.Mesh;
