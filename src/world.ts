@@ -7,6 +7,7 @@ import LiveLoopTemplate, { templateDefinitions } from 'src/entities/LiveLoopTemp
 import LiveLoopEntity, { LiveLoopEntityDefinition } from 'src/entities/LiveLoopEntity';
 import TemplateBase from 'src/entities/TemplateBase';
 import { LiveLoopCatagory } from './generation/directory';
+import SubscriptionsSet from './SubscriptionsSet';
 import createReticle from './reticle';
 
 import VrEnvironment from './VrEnvironment';
@@ -23,7 +24,8 @@ export class World {
   readonly camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
   private vrEnvironment: VrEnvironment;
-  private entities: Set<Entity> = new Set();
+  private subscriptionsSet: SubscriptionsSet;
+  private entities = new Set<Entity>();
 
   /**
    * Lights associated with the world.
@@ -37,6 +39,7 @@ export class World {
   constructor() {
     // Basic set up of scene, camera, and renderer:
     this.scene = new THREE.Scene();
+    this.subscriptionsSet = new SubscriptionsSet(this.scene);
 
     // NOTE: arguments to perspective camera are:
     // Field of view, aspect ratio, near and far clipping plane
@@ -85,11 +88,28 @@ export class World {
     }
 
     this.entities.delete(entity);
-    entity.onRemove(this);
+    if (entity.onRemove) {
+      entity.onRemove(this);
+    }
+    this.subscriptionsSet.releaseEntitySubscriptions(entity);
   }
 
   hasEntity(entity: Entity) {
     return this.entities.has(entity);
+  }
+
+  /**
+   * Adds a threejs object to the world that will be removed when this entity is
+   */
+  addObjectForEntity: SubscriptionsSet['addObjectForEntity'] = (entity, object) => {
+    this.subscriptionsSet.addObjectForEntity(entity, object);
+  }
+
+  /**
+   * Adds an observable subscription to the world that will be removed when the entity is
+   */
+  addSubscriptionForEntity: SubscriptionsSet['addSubscriptionForEntity'] = (entity, subscription) => {
+    this.subscriptionsSet.addSubscriptionForEntity(entity, subscription);
   }
 
   /**
