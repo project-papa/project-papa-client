@@ -1,5 +1,5 @@
 import Coordinator from './Coordinator';
-import { getRubyForLiveLoop, LiveLoopName, getEffect } from './directory';
+import { getRubyForLiveLoop, LiveLoopName, getEffect, getNumberOfEffects } from './directory';
 
 export default class LiveLoop {
 
@@ -7,15 +7,18 @@ export default class LiveLoop {
   private readonly name: string;
   private volume: number = 1;
   private outputRuby: string;
-  private id: number;
-  private tag: string;
+  private readonly id: number;
+  private readonly tag: string;
   private effectNum: number = 0;
   private effectData = getEffect(0);
+  private static readonly numOfEffects: number = getNumberOfEffects();
   private readonly scopeNum: number;
   private static idCount: number = 0;
   private static coordinator = new Coordinator();
 
   public constructor(name: LiveLoopName) {
+
+    // TODO change so constructor takes catagory as arg and gets these lists from coordinator.
 
     this.scopeNum = LiveLoop.coordinator.getFreeScope();
 
@@ -25,9 +28,6 @@ export default class LiveLoop {
     // Get a unique ID for this loop and generate the tag
     this.id = LiveLoop.idCount++;
     this.tag = 'loop_' + this.id + '_' + name;
-
-    // Convert the ruby into the form of a loop
-    this.rawRuby = 'live_loop :'+this.tag+' do\n'+rawRuby+'\nend';
 
     this.generateRuby();
 
@@ -55,14 +55,21 @@ export default class LiveLoop {
     }
   }
 
-  // TODO def an effectNum type in directory that is intrinsically in range 0-5
   public nextEffect() {
-    this.effectNum = (this.effectNum + 1) % 6;
+    this.effectNum = (this.effectNum + 1) % LiveLoop.numOfEffects;
+
+    // Get the information about the effect
+    this.effectData = getEffect(this.effectNum);
+
     this.generateAndPushRuby();
   }
 
   public prevEffect() {
-    this.effectNum = (this.effectNum - 1) % 6;
+    this.effectNum = (this.effectNum - 1) % LiveLoop.numOfEffects;
+
+    // Get the information about the effect
+    this.effectData = getEffect(this.effectNum);
+
     this.generateAndPushRuby();
   }
 
@@ -75,9 +82,6 @@ export default class LiveLoop {
     // Reset the output
     this.outputRuby = this.rawRuby;
 
-    // Get the information about the effect
-    this.effectData = getEffect(this.effectNum);
-
     // Add the effect
     this.outputRuby = 'with_fx :' + this.effectData.name // TODO add parameters
                     + ' do\n' + this.outputRuby + '\nend\n';
@@ -89,6 +93,9 @@ export default class LiveLoop {
     // Add the oscilliscope data wrapper
     this.outputRuby = 'with_fx \"sonic-pi-fx_scope_out\", scope_num: '
                     + this.scopeNum + ' do\n' + this.outputRuby + '\nend\n';
+
+    // Add the final liveloop declaration
+    this.outputRuby = 'live_loop :'+this.tag+' do\n'+this.outputRuby+'\nend';
   }
 
   /**
