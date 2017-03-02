@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 
 import { Colours } from 'src/colours';
-import { Cylinder, Shape } from 'src/shape';
 import SelectListener from 'src/SelectListener';
 import { Entity } from 'src/entities/entity';
 import LiveLoopTemplate, { templateDefinitions } from 'src/entities/LiveLoopTemplate';
 import LiveLoopEntity, { LiveLoopEntityDefinition } from 'src/entities/LiveLoopEntity';
+import TemplateBase from 'src/entities/TemplateBase';
 import { LiveLoopCatagory } from './generation/directory';
 import createReticle from './reticle';
 
@@ -24,12 +24,6 @@ export class World {
   private renderer: THREE.WebGLRenderer;
   private vrEnvironment: VrEnvironment;
   private entities: Set<Entity> = new Set();
-
-  /**
-   * Each World will also keep track of what shapes are currently in it.
-   * NOTE: This is a  private member.
-   */
-  private shapes: Array<Shape> = [];
 
   /**
    * Lights associated with the world.
@@ -99,16 +93,6 @@ export class World {
   }
 
   /**
-   * Add shape to world:
-   */
-  addShape(shape: Shape) {
-    // First add to scene:
-    this.scene.add(shape.mesh);
-    // Then add to shapes array:
-    this.shapes.push(shape);
-  }
-
-  /**
    * Set up the physical environment itself.
   */
   setupEnvironment() {
@@ -133,15 +117,7 @@ export class World {
     this.scene.add(pLight);
 
     // Place the cylinder floor in the world:
-    // (This is a placeholder for the tray that will hold the live loops.)
-    const cylinder = new Cylinder(
-      new THREE.CylinderGeometry(10, 10, 0.5, 32, 32),
-      new THREE.MeshPhongMaterial({ color: 0xffffff, opacity: 0.2, transparent: true }),
-    );
-    cylinder.getMesh().position.set(0, -5, 0);
-    // Add the shape and mesh to their respective arrays:
-    this.shapes.push(cylinder);
-    this.scene.add(cylinder.getMesh());
+    this.addEntity(new TemplateBase());
 
     this.addEntity(new LiveLoopTemplate(templateDefinitions.ambient));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.lead));
