@@ -25,3 +25,8 @@ declare module 'myo' {
 
   export = Myo;
 }
+
+declare module 'file-loader!*' {
+  const uri: string;
+  export = uri;
+}
