@@ -6,6 +6,7 @@ import * as utils from './utils';
 import THREE = require('three');
 import { getEffect, LiveLoopCatagory } from 'src/generation/directory';
 import LiveLoop from 'src/generation/LiveLoop';
+import { SmoothValue, ExponentialAverage } from '../SmoothValue';
 
 export interface LiveLoopEntityDefinition {
   type: LiveLoopCatagory;
@@ -25,11 +26,13 @@ export default class LiveLoopEntity implements Entity {
   selected: boolean = false;
   fisted: boolean = false;
   world: World;
+  amplitude: SmoothValue;
 
   dead : boolean = false;
 
   constructor(definition: LiveLoopEntityDefinition) {
     this.type = definition.type;
+    this.amplitude = new ExponentialAverage(0.5, 0);
     this.coreMesh = definition.mesh;
     this.coreMesh.geometry.scale(0.8, 0.8, 0.8);
     this.outlineMesh = new THREE.Mesh(
@@ -125,8 +128,7 @@ export default class LiveLoopEntity implements Entity {
       this,
       this.liveloop.oscilloscopeData().subscribe(
         amplitude => {
-          const scale = 1.1 + amplitude * 1.5;
-          this.outlineMesh.scale.set(scale, scale, scale);
+          this.amplitude.updateTarget(amplitude);
         },
       ),
     );
@@ -142,6 +144,10 @@ export default class LiveLoopEntity implements Entity {
         utils.moveObjectUp(delta, 0.01, this.group);
       }
     }
+
+    this.amplitude.update(delta);
+    const scale = 1.1 + this.amplitude.getValue() * 1.5;
+    this.outlineMesh.scale.set(scale, scale, scale);
 
     this.group.rotateY(delta * 0.001);
   }
