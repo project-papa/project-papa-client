@@ -5,6 +5,7 @@ import SelectListener from 'src/SelectListener';
 import { Entity } from 'src/entities/entity';
 import LiveLoopTemplate, { templateDefinitions } from 'src/entities/LiveLoopTemplate';
 import LiveLoopEntity, { LiveLoopEntityDefinition } from 'src/entities/LiveLoopEntity';
+import GridEntity from 'src/entities/GridEntity';
 import TemplateBase from 'src/entities/TemplateBase';
 import { LiveLoopCatagory } from './generation/directory';
 import SubscriptionsSet from './SubscriptionsSet';
@@ -128,10 +129,7 @@ export class World {
     this.scene.background = new THREE.Color(0x0d0d0d);
 
     // Add a wireframe grid helper to the scene:
-    // (for debug purposes)
-    const gridHelper = new THREE.GridHelper(200, 150);
-    gridHelper.position.set(0, -4, 0);
-    this.scene.add(gridHelper);
+    this.addEntity(new GridEntity());
 
     // Add ambient light:
     const ambientLight = new THREE.AmbientLight(0x808080);
@@ -174,14 +172,6 @@ export class World {
 
     // Set up the environement itself (i.e. populate with shapes)
     this.setupEnvironment();
-
-    LiveLoop.globalOscilloscopeData().subscribe(
-      amplitude => {
-        // Amplitude: low-> blue, medium -> purple, high -> pink
-        const red = amplitude * 0x0000ff;
-        ((this.scene.getObjectByName('gridHelper') as THREE.GridHelper).material as THREE.LineBasicMaterial).color.setHex((red << 16) + 0x000050);
-      },
-    );
 
     this.vrEnvironment
       .createAnimator(delta => this.update(delta))
