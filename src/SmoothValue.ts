@@ -3,7 +3,7 @@ export interface SmoothValue {
   updateTarget(val: number): void;
   update(delta: number): void;
   reset(): void;
-};
+}
 
 export class ExponentialAverage implements SmoothValue {
   private alpha: number;
