@@ -18,7 +18,7 @@ export function moveMeshUp(delta : number, scale : number, mesh : THREE.Mesh) {
     new THREE.Vector3(
       0,
       delta * scale,
-      0
-    )
+      0,
+    ),
   );
 }

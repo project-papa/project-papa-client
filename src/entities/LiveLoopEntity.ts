@@ -92,7 +92,6 @@ export default class LiveLoopEntity implements Entity {
         }),
     );
 
-
     this.world = world;
 
     /**
