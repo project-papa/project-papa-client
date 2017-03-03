@@ -43,7 +43,7 @@ export class World {
     // NOTE: arguments to perspective camera are:
     // Field of view, aspect ratio, near and far clipping plane
     this.camera = new THREE.PerspectiveCamera(
-      75,
+      70,
       window.innerWidth / window.innerHeight,
       0.1, 1000,
     );
@@ -128,8 +128,8 @@ export class World {
 
     // Add a wireframe grid helper to the scene:
     // (for debug purposes)
-    const gridHelper = new THREE.GridHelper(150, 150);
-    gridHelper.position.set(0, -2, 0);
+    const gridHelper = new THREE.GridHelper(200, 150);
+    gridHelper.position.set(0, -4, 0);
     this.scene.add(gridHelper);
 
     // Add ambient light:

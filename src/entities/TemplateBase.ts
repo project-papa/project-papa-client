@@ -10,10 +10,10 @@ export default class TemplateBase implements Entity {
 
   onAdd(world: World) {
     this.mesh = new THREE.Mesh(
-      new THREE.CylinderGeometry(10, 10, 0.5, 32, 32),
-      new THREE.MeshPhongMaterial({ color: 0xffffff, opacity: 0.2, transparent: true }),
+      new THREE.CylinderGeometry(6, 6, 0.5, 32, 32),
+      new THREE.MeshPhongMaterial({ color: 0x333333 }),
     );
-    this.mesh.position.set(0, -5, 0);
+    this.mesh.position.set(0, -4, 0);
     world.scene.add(this.mesh);
   }
 
