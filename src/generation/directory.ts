@@ -67,9 +67,7 @@ export type LiveLoopName = keyof typeof liveLoops;
 
 export type LiveLoopCatagory = 'drums' | 'ambient' | 'weird' | 'lead' | 'bass';
 
-const catagories: {
-  [P in LiveLoopCatagory]: LiveLoopName[];
-} = {
+const catagories: {[P in LiveLoopCatagory]: LiveLoopName[]; } = {
   drums: [
     'drums_tabla',
     'drums_chilled_dnb',
@@ -103,28 +101,34 @@ const effects = [
   {
     name: 'level',
     parameters: {},
+    colour: 0xffffff,
   },
   {
     name: 'reverb',
     parameters: {
       room: 0.85,
     },
+    colour: 0xff6600,
   },
   {
     name: 'echo',
     parameters: {},
+    colour: 0x00ffff,
   },
   {
     name: 'wobble',
     parameters: {},
+    colour: 0x66ff33,
   },
   {
     name: 'whammy',
     parameters: {},
+    colour: 0xff00ff,
   },
   {
     name: 'hpf',
     parameters: {},
+    colour: 0xffff00,
   },
 ];
 
@@ -132,6 +136,6 @@ export function getNumberOfEffects() {
   return effects.length;
 }
 
-export function getEffect(i : number) {
+export function getEffect(i: number) {
   return effects[i];
 }

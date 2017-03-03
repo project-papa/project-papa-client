@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import * as controls from 'src/controls';
 import * as utils from './utils';
 import THREE = require('three');
-import { LiveLoopCatagory } from 'src/generation/directory';
+import { getEffect, LiveLoopCatagory } from 'src/generation/directory';
 import LiveLoop from 'src/generation/LiveLoop';
 
 export interface LiveLoopEntityDefinition {
@@ -63,7 +63,10 @@ export default class LiveLoopEntity implements Entity {
         .filter(controls.eventIs.waveIn)
         .subscribe(event => {
           if (this.selected) {
-            // Subtract effect
+            // Previous effect
+            this.liveloop.prevEffect();
+            const currentEffectNum = this.liveloop.getEffectNum();
+            this.applyEffectColour(currentEffectNum);
           }
         }),
     );
@@ -75,6 +78,9 @@ export default class LiveLoopEntity implements Entity {
         .subscribe(event => {
           if (this.selected) {
             // Add effect
+            this.liveloop.nextEffect();
+            const currentEffectNum = this.liveloop.getEffectNum();
+            this.applyEffectColour(currentEffectNum);
           }
         }),
     );
@@ -107,5 +113,10 @@ export default class LiveLoopEntity implements Entity {
 
   onRemove(world: World) {
     this.liveloop.delete();
+  }
+
+  applyEffectColour(index: number) {
+    const col = getEffect(index).colour;
+    (this.mesh.material as THREE.MeshPhongMaterial).color.setHex(col);
   }
 }

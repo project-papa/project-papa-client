@@ -9,6 +9,7 @@ import TemplateBase from 'src/entities/TemplateBase';
 import { LiveLoopCatagory } from './generation/directory';
 import SubscriptionsSet from './SubscriptionsSet';
 import createReticle from './reticle';
+import LiveLoop from 'src/generation/LiveLoop';
 
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
@@ -173,6 +174,14 @@ export class World {
 
     // Set up the environement itself (i.e. populate with shapes)
     this.setupEnvironment();
+
+    LiveLoop.globalOscilloscopeData().subscribe(
+      amplitude => {
+        // Amplitude: low-> blue, medium -> purple, high -> pink
+        const red = amplitude * 0x0000ff;
+        ((this.scene.getObjectByName('gridHelper') as THREE.GridHelper).material as THREE.LineBasicMaterial).color.setHex((red << 16) + 0x000050);
+      },
+    );
 
     this.vrEnvironment
       .createAnimator(delta => this.update(delta))

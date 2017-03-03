@@ -44,6 +44,8 @@ export default class LiveLoop {
 
   public getEffectData() { return this.effectData; }
 
+  public getEffectNum() { return this.effectNum; }
+
   /**
    * Set volume method that restricts any input into the range of 0-1
    */
