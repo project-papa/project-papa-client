@@ -25,7 +25,7 @@ export default class GridEntity implements Entity {
       LiveLoop.globalOscilloscopeData().subscribe(
         amplitude => {
           const red = amplitude * 0x0000ff;
-          (this.grid.material as THREE.LineBasicMaterial).color.setHex((red << 16) + 0x000050);
+          world.scene.background = new THREE.Color((red << 16) + 0x000050);
         },
       ),
     );

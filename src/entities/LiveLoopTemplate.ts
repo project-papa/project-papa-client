@@ -30,10 +30,9 @@ function createLiveLoopMaterial(color: number, opacity: number) {
 
 function createBase() {
   const base = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.2, 0.2, 0.05, 20),
+    new THREE.CylinderGeometry(0.15, 0.15, 0.001, 20),
     new THREE.MeshLambertMaterial({
-      color: 0x444444,
-      opacity: 0.2,
+      color: 0x111111,
     }),
   );
   base.position.setY(-1.2);
