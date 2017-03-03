@@ -57,6 +57,10 @@ const liveLoops = {
   `sync :metronome_8
   sample :loop_tabla, beat_stretch: 16
   sleep 8`,
+  drums_industrial:
+  `sync :metronome_2
+  sample :loop_industrial, beat_stretch: 2
+  sleep 2`,
   lead_stub:
   `sleep 1`,
   bass_stub:
@@ -75,6 +79,7 @@ const catagories: {
     'drums_chilled_dnb',
     'drums_dance',
     'drums_upbeat',
+    'drums_industrial',
   ],
   ambient: [
     'ambient_hum',
