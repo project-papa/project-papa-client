@@ -33,6 +33,7 @@ function createBase() {
     new THREE.CylinderGeometry(0.2, 0.2, 0.05, 20),
     new THREE.MeshLambertMaterial({
       color: 0x444444,
+      opacity: 0.2,
     }),
   );
   base.position.setY(-1.2);
@@ -57,7 +58,7 @@ export default class LiveLoopTemplate implements Entity {
 
     this.group = new THREE.Group();
 
-    this.mesh = this.createMesh(0x333333, 1);
+    this.mesh = this.createMesh(0x333333, 0.8);
     this.mesh.position.setY(-0.7);
     this.mesh.scale.set(0.5, 0.5, 0.5);
     this.group.add(this.mesh);
@@ -118,6 +119,12 @@ export default class LiveLoopTemplate implements Entity {
         this.meshToAdd,
         3,
       );
+    }
+    if (this.selected) {
+      this.mesh.rotateY(delta * 0.00025);
+      (this.mesh.material as THREE.MeshPhongMaterial).opacity = 1;
+    } else {
+      (this.mesh.material as THREE.MeshPhongMaterial).opacity = 0.8;
     }
   }
 
