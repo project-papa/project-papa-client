@@ -82,11 +82,19 @@ export default class LiveLoop {
    * DOES NOT push the update to the coordinator.
    */
   public generateRuby() {
+
+    let effectParams = this.effectData.name;
+
+    // Add all of the parameters
+    for (const entry of Object.entries(this.effectData.parameters)) {
+      effectParams = `${effectParams}, ${entry[0]}: ${entry[1]}`;
+    }
+
     this.outputRuby = `
       with_fx "sonic-pi-fx_scope_out", scope_num: ${this.scopeNum} do
         live_loop :${this.tag} do
           with_fx :level, amp: ${this.volume} do
-            with_fx :${this.effectData.name} do #TODO: add parameters
+            with_fx :${effectParams} do
               ${this.rawRuby}
             end
           end
