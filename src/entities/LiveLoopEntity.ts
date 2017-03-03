@@ -60,7 +60,14 @@ export default class LiveLoopEntity implements Entity {
       this,
       world.selectListener
         .observeSelections(this.coreMesh)
-        .subscribe(event => this.selected = event.selected),
+        .subscribe(event => {
+          this.selected = event.selected;
+          if (this.selected) {
+            (this.outlineMesh.material as THREE.MeshPhongMaterial).opacity = 0.6;
+          } else {
+            (this.outlineMesh.material as THREE.MeshPhongMaterial).opacity = 0.2;
+          }
+        }),
     );
 
     world.addSubscriptionForEntity(
