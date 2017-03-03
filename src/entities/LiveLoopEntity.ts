@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import * as controls from 'src/controls';
 import * as utils from './utils';
 import THREE = require('three');
-import { LiveLoopName, getEffect , LiveLoopCatagory} from 'src/generation/directory';
+import { LiveLoopName, getEffect, LiveLoopCatagory } from 'src/generation/directory';
 import LiveLoop from 'src/generation/LiveLoop';
 
 export interface LiveLoopEntityDefinition {
@@ -115,7 +115,7 @@ export default class LiveLoopEntity implements Entity {
     this.liveloop.delete();
   }
 
-  applyEffectColour (index :number) {
+  applyEffectColour(index: number) {
     const col = getEffect(index).colour;
     (this.mesh.material as THREE.MeshPhongMaterial).color.setHex(col);
   }

@@ -120,16 +120,6 @@ export class World {
     this.subscriptionsSet.addSelectorObject(entity, object);
   }
 
-/*
-  applyEffect(name: string, shape: Shape) {
-    for (const eff of effects) {
-      if (eff.name === name) {
-        (shape.material as THREE.MeshPhongMaterial).color.setHex(eff.colour);
-      }
-    }
-  }
-*/
-
   /**
    * Set up the physical environment itself.
   */
