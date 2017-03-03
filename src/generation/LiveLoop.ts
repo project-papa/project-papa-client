@@ -69,7 +69,7 @@ export default class LiveLoop {
   }
 
   public prevEffect() {
-    this.effectNum = (this.effectNum - 1) % LiveLoop.numOfEffects;
+    this.effectNum = ((this.effectNum - 1) + LiveLoop.numOfEffects) % LiveLoop.numOfEffects;
 
     // Get the information about the effect
     this.effectData = getEffect(this.effectNum);
