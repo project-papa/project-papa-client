@@ -26,7 +26,7 @@ const liveLoops = {
   sample :ambi_choir, attack: 0.25, rate: -0.33, pitch: pitch_shift`,
   drums_upbeat:
   `sync :metronome_2
-  with_fx :level, amp: 0.4
+  with_fx :level, amp: 0.4 do
   with_fx :distortion, distort: 0.7 do
     sample :drum_heavy_kick
     sleep 0.5
@@ -111,7 +111,7 @@ const effects = [
   {
     name: 'reverb',
     parameters: {
-      room: 0.85,
+      room: 0.9,
     },
     colour: 0xff6600,
   },

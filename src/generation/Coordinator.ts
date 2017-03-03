@@ -2,8 +2,6 @@ import LiveLoop from './LiveLoop';
 import SonicPiCommunicator from '../pi/SonicPiCommunicator';
 import { getLoopsOfType, LiveLoopCatagory, LiveLoopName } from './directory';
 
-const GLOBAL_OSCILLOSCOPE_INDEX = 1;
-
 export default class Coordinator {
 
   private header: string = '';
@@ -37,7 +35,7 @@ export default class Coordinator {
     );
 
     // Add the free scope numbers
-    for(let i = 2; i < 128; i++) {
+    for(let i = 1; i < 128; i++) {
       this.freeScopeNums.push(i);
     }
 
@@ -76,7 +74,6 @@ export default class Coordinator {
       sleep 8
     end`;
 
-    this.usedScopeNums.add(GLOBAL_OSCILLOSCOPE_INDEX);
     this.updateOscilloscopeSubscriptions();
   }
 
@@ -85,7 +82,7 @@ export default class Coordinator {
   /**
    * Method to return a free scope number to a live loop. Scope numbers are
    * released when a loop is deleted. Sonic Pi can handle a maximum of 128
-   * scopes, two of which are used by the global state, so a maximum of 126
+   * scopes, one of which is used by the global state, so a maximum of 127
    * live loops should be created.
    */
   public getFreeScope() {
@@ -160,14 +157,6 @@ export default class Coordinator {
       this.outputRuby = this.outputRuby + loop.getRuby() + '\n';
     }
 
-    // Add global scope number 1
-    this.outputRuby = `
-      use_external_synths true
-      with_fx "sonic-pi-fx_scope_out", scope_num: ${GLOBAL_OSCILLOSCOPE_INDEX} do
-        ${this.outputRuby}
-      end
-    `;
-
     // Add the header
     this.outputRuby = this.header + '\n' + this.outputRuby;
 
@@ -197,7 +186,14 @@ export default class Coordinator {
   }
 
   public globalOscilloscopeData() {
-    return this.oscilloscopeDataForIndex(GLOBAL_OSCILLOSCOPE_INDEX);
+    return this.communicator.oscData()
+      .map(oscData => {
+        let sum = 0;
+        for (const scopeNum of this.usedScopeNums) {
+          sum += oscData.data[scopeNum];
+        }
+        return sum;
+      });
   }
 
   updateOscilloscopeSubscriptions() {
