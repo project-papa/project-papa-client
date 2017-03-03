@@ -61,10 +61,31 @@ const liveLoops = {
   `sync :metronome_2
   sample :loop_industrial, beat_stretch: 2
   sleep 2`,
-  lead_stub:
-  `sleep 1`,
+  lead_squelch:
+  `sync :metronome_4
+  with_synth :tb303 do
+    with_fx :reverb, room: 0.8 do
+      use_random_seed 3000
+      16.times do
+        n = (ring :e1, :e2, :e3).tick
+        play n, release: 0.125, cutoff: rrand(70, 130), res: 0.9, wave: 1, amp: 0.8
+        sleep 0.125
+      end
+    end
+  end`,
   bass_stub:
   `sleep 1`,
+  weird_space_scanner:
+  `sync :metronome_4
+  with_synth :tb303 do
+    with_fx :reverb, room: 0.8 do
+      with_fx :slicer, phase: 0.25, amp: 1.5 do
+        co = (line 70, 130, steps: 8).tick
+        play :e1, cutoff: co, release: 7, attack: 1, cutoff_attack: 4, cutoff_release: 4
+        sleep 8
+      end
+    end
+  end`,
 };
 
 export type LiveLoopName = keyof typeof liveLoops;
@@ -85,9 +106,10 @@ const catagories: {[P in LiveLoopCatagory]: LiveLoopName[]; } = {
   ],
   weird: [
     'weird_vinyl',
+    'weird_space_scanner',
   ],
   lead: [
-    'lead_stub',
+    'lead_squelch',
   ],
   bass: [
     'bass_stub',

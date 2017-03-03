@@ -49,6 +49,7 @@ export default class Coordinator {
     // Define the header timing information
     this.header =
     `use_bpm 128
+    use_external_synths true
 
     live_loop :metronome_2 do
       sleep 2
