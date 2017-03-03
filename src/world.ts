@@ -11,6 +11,7 @@ import { LiveLoopCatagory } from './generation/directory';
 import SubscriptionsSet from './SubscriptionsSet';
 import createReticle from './reticle';
 import LiveLoop from 'src/generation/LiveLoop';
+import { createBrandElement } from './brand';
 
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
@@ -58,6 +59,18 @@ export class World {
     this.vrEnvironment = new VrEnvironment(this.renderer, this.camera, this.scene);
     this.vrEnvironment.init();
     this.vrEnvironment.setSize(window.innerWidth, window.innerHeight);
+
+    this.renderer.domElement.style.position = 'absolute';
+    this.renderer.domElement.style.left = '0';
+    this.renderer.domElement.style.right = '0';
+    this.renderer.domElement.style.bottom = '0';
+    this.renderer.domElement.style.top = '0';
+
+    window.addEventListener('resize', () => {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+      this.vrEnvironment.setSize(window.innerWidth, window.innerHeight);
+    });
 
     // Set up the Selector by passing it the scene and camera
     this.selectListener = new SelectListener(this.camera, this.scene);
@@ -172,6 +185,7 @@ export class World {
    */
   start() {
     window.document.body.appendChild(this.renderer.domElement);
+    window.document.body.appendChild(createBrandElement());
 
     // Set up the environement itself (i.e. populate with shapes)
     this.setupEnvironment();
