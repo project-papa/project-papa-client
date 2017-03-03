@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import * as controls from 'src/controls';
 import * as utils from './utils';
 import THREE = require('three');
-import { LiveLoopName, getEffect, LiveLoopCatagory } from 'src/generation/directory';
+import { getEffect, LiveLoopCatagory } from 'src/generation/directory';
 import LiveLoop from 'src/generation/LiveLoop';
 
 export interface LiveLoopEntityDefinition {
