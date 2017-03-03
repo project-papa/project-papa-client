@@ -28,6 +28,7 @@ export class World {
   private vrEnvironment: VrEnvironment;
   private subscriptionsSet: SubscriptionsSet;
   private entities = new Set<Entity>();
+  private prevTimestamp: number = 0;
 
   /**
    * Lights associated with the world.
@@ -155,7 +156,9 @@ export class World {
   /**
    * Update the objects in the world
    */
-  update(delta: number) {
+  update(timestamp: number) {
+    const delta = timestamp - this.prevTimestamp;
+    this.prevTimestamp = timestamp;
     this.selectListener.update();
     for (const entity of this.entities) {
       if (entity.onUpdate) {

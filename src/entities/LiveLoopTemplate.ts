@@ -113,7 +113,7 @@ export default class LiveLoopTemplate implements Entity {
 
   onUpdate(delta: number) {
     if (this.meshToAdd) {
-      utils.projectMeshDistanceFromCamera(
+      utils.projectObjectDistanceFromCamera(
         this.world.camera,
         this.meshToAdd,
         3,

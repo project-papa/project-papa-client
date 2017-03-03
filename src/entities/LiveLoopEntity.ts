@@ -18,29 +18,45 @@ export interface LiveLoopEntityDefinition {
  */
 export default class LiveLoopEntity implements Entity {
   type: LiveLoopCatagory;
-  mesh: THREE.Mesh;
+  group: THREE.Group;
+  coreMesh: THREE.Mesh;
+  outlineMesh: THREE.Mesh;
   liveloop: LiveLoop;
   selected: boolean = false;
-  amplitude: number = 0.5;
   fisted: boolean = false;
   world: World;
 
-  spread : boolean = false;
-  readyToRemove : boolean = false;
+  dead : boolean = false;
 
   constructor(definition: LiveLoopEntityDefinition) {
     this.type = definition.type;
-    this.mesh = definition.mesh;
+    this.coreMesh = definition.mesh;
+    this.coreMesh.geometry.scale(0.8, 0.8, 0.8);
+    this.outlineMesh = new THREE.Mesh(
+      (this.coreMesh.geometry.clone() as THREE.Geometry),
+      new THREE.MeshBasicMaterial({
+        color: 0xeeeeee,
+        opacity: 0.2,
+        transparent: true,
+      }),
+    );
+
+    this.group = new THREE.Group();
+    utils.setVectorFromVector(this.group.position, this.coreMesh.position);
+    this.coreMesh.position.set(0, 0, 0);
+    this.outlineMesh.position.set(0, 0, 0);
+    this.group.add(this.coreMesh);
+    this.group.add(this.outlineMesh);
   }
 
   onAdd(world: World) {
-    world.addObjectForEntity(this, this.mesh);
-    world.addSelectorObject(this, this.mesh);
+    world.addObjectForEntity(this, this.group);
+    world.addSelectorObject(this, this.coreMesh);
     this.liveloop = new LiveLoop(this.type);
     world.addSubscriptionForEntity(
       this,
       world.selectListener
-        .observeSelections(this.mesh)
+        .observeSelections(this.coreMesh)
         .subscribe(event => this.selected = event.selected),
     );
 
@@ -94,7 +110,7 @@ export default class LiveLoopEntity implements Entity {
         .filter(controls.eventIs.spread)
         .subscribe(event => {
           if (this.selected) {
-            this.spread = true;
+            this.kill();
           }
         }),
     );
@@ -109,11 +125,8 @@ export default class LiveLoopEntity implements Entity {
       this,
       this.liveloop.oscilloscopeData().subscribe(
         amplitude => {
-          const flooredAmplitude = Math.max(amplitude, 0.01);
-          const oldAmp = this.amplitude;
-          const factor = flooredAmplitude / oldAmp;
-          this.mesh.geometry.scale(factor, factor, factor);
-          this.amplitude = flooredAmplitude;
+          const scale = 1.1 + amplitude * 1.5;
+          this.outlineMesh.scale.set(scale, scale, scale);
         },
       ),
     );
@@ -121,22 +134,31 @@ export default class LiveLoopEntity implements Entity {
 
   onUpdate(delta: number) {
     if (this.fisted) {
-      utils.projectMeshDistanceFromCamera(this.world.camera, this.mesh, 3);
-    } else if (this.spread) {
-      if (this.mesh.position.y > 1000) {
+      utils.projectObjectDistanceFromCamera(this.world.camera, this.group, 3);
+    } else if (this.dead) {
+      if (this.group.position.y > 100) {
         this.world.removeEntity(this);
       } else {
-        utils.moveMeshUp(delta, 0.0001, this.mesh);
+        utils.moveObjectUp(delta, 0.01, this.group);
       }
     }
+
+    this.group.rotateY(delta * 0.001);
   }
 
   onRemove(world: World) {
+    if (!this.dead) {
+      this.kill();
+    }
+  }
+
+  kill() {
+    this.dead = true;
     this.liveloop.delete();
   }
 
   applyEffectColour(index: number) {
     const col = getEffect(index).colour;
-    (this.mesh.material as THREE.MeshPhongMaterial).color.setHex(col);
+    (this.coreMesh.material as THREE.MeshPhongMaterial).color.setHex(col);
   }
 }
