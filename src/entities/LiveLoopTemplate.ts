@@ -28,6 +28,18 @@ function createLiveLoopMaterial(color: number, opacity: number) {
   });
 }
 
+function createBase() {
+  const base = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.2, 0.2, 0.05, 20),
+    new THREE.MeshLambertMaterial({
+      color: 0x444444,
+    }),
+  );
+  base.position.setY(-1.2);
+
+  return base;
+}
+
 /**
  * A LiveLoopTemplate can be selected by the user to create a new live loop
  * in the world.
@@ -42,26 +54,19 @@ export default class LiveLoopTemplate implements Entity {
 
   constructor(definition: LiveLoopTemplateDefinition) {
     this.definition = definition;
-    this.mesh = this.createMesh(0x333333, 1);
-    this.group = new THREE.Group();
-    const base = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.2, 0.2, 0.05, 20),
-      new THREE.MeshLambertMaterial({
-        color: 0x444444,
-      }),
-    );
-    base.position.setY(-1.2);
-    this.group.add(this.mesh);
-    this.group.add(base);
 
+    this.group = new THREE.Group();
+
+    this.mesh = this.createMesh(0x333333, 1);
     this.mesh.position.setY(-0.7);
+    this.mesh.scale.set(0.5, 0.5, 0.5);
+    this.group.add(this.mesh);
+    this.group.add(createBase());
     this.group.position.set(
       definition.position.x,
       0,
       definition.position.z,
     );
-
-    this.mesh.scale.set(0.5, 0.5, 0.5);
   }
 
   onAdd(world: World) {
@@ -88,7 +93,6 @@ export default class LiveLoopTemplate implements Entity {
         .subscribe(
           controls.listenPose({
             start: () => {
-              console.log('fist');
               if (this.selected) {
                 this.startMeshAdd();
 
