@@ -1,10 +1,10 @@
 import Coordinator from './Coordinator';
-import { getRubyForLiveLoop, LiveLoopName, getEffect, getNumberOfEffects } from './directory';
+import { getRubyForLiveLoop, LiveLoopName, getEffect, getNumberOfEffects, LiveLoopCatagory } from './directory';
 
 export default class LiveLoop {
 
   private readonly rawRuby: string;
-  private readonly name: string;
+  private readonly name: LiveLoopName;
   private volume: number = 1;
   private outputRuby: string;
   private readonly id: number;
@@ -16,18 +16,20 @@ export default class LiveLoop {
   private static idCount: number = 0;
   private static coordinator = new Coordinator();
 
-  public constructor(name: LiveLoopName) {
+  public constructor(type: LiveLoopCatagory) {
 
-    // TODO change so constructor takes catagory as arg and gets these lists from coordinator.
+    // Get a random loop of the correct catagory
+    this.name = LiveLoop.coordinator.getLoopOfType(type);
 
+    // Get a scope number for oscilliscope reading
     this.scopeNum = LiveLoop.coordinator.getFreeScope();
 
     // Get the ruby for this type of loop
-    const rawRuby = getRubyForLiveLoop(name);
+    this.rawRuby = getRubyForLiveLoop(this.name);
 
     // Get a unique ID for this loop and generate the tag
     this.id = LiveLoop.idCount++;
-    this.tag = 'loop_' + this.id + '_' + name;
+    this.tag = `loop_${this.id}_${this.name}`;
 
     this.generateRuby();
 
@@ -80,24 +82,17 @@ export default class LiveLoop {
    * DOES NOT push the update to the coordinator.
    */
   public generateRuby() {
-
-    // Reset the output
-    this.outputRuby = this.rawRuby;
-
-    // Add the effect
-    this.outputRuby = 'with_fx :' + this.effectData.name // TODO add parameters
-                    + ' do\n' + this.outputRuby + '\nend\n';
-
-    // Add the vol wrapper
-    this.outputRuby = 'with_fx :level, amp: ' + this.volume
-                    + ' do\n' + this.outputRuby + '\nend\n';
-
-    // Add the oscilliscope data wrapper
-    this.outputRuby = 'with_fx \"sonic-pi-fx_scope_out\", scope_num: '
-                    + this.scopeNum + ' do\n' + this.outputRuby + '\nend\n';
-
-    // Add the final liveloop declaration
-    this.outputRuby = 'live_loop :'+this.tag+' do\n'+this.outputRuby+'\nend';
+    this.outputRuby = `
+      with_fx "sonic-pi-fx_scope_out", scope_num: ${this.scopeNum} do
+        live_loop :${this.tag} do
+          with_fx :level, amp: ${this.volume} do
+            with_fx :${this.effectData.name} do #TODO: add parameters
+              ${this.rawRuby}
+            end
+          end
+        end
+      end
+    `;
   }
 
   /**
@@ -130,7 +125,7 @@ export default class LiveLoop {
  * Example of subscribing to a live loop
  */
 function subscribeToLiveLoop() {
-  (new LiveLoop('weird_vinyl')).oscilloscopeData().subscribe(
+  (new LiveLoop('drums')).oscilloscopeData().subscribe(
     number => {
       console.log(number);
     },

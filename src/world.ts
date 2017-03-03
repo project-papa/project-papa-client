@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 
 import { Colours } from 'src/colours';
-import { Cylinder, Shape } from 'src/shape';
 import SelectListener from 'src/SelectListener';
 import { Entity } from 'src/entities/entity';
 import LiveLoopTemplate, { templateDefinitions } from 'src/entities/LiveLoopTemplate';
 import LiveLoopEntity, { LiveLoopEntityDefinition } from 'src/entities/LiveLoopEntity';
-import { LiveLoopName } from './generation/directory';
+import TemplateBase from 'src/entities/TemplateBase';
+import { LiveLoopCatagory } from './generation/directory';
+import SubscriptionsSet from './SubscriptionsSet';
 import createReticle from './reticle';
 import LiveLoop from 'src/generation/liveloop';
 
@@ -24,13 +25,8 @@ export class World {
   readonly camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
   private vrEnvironment: VrEnvironment;
-  private entities: Set<Entity> = new Set();
-
-  /**
-   * Each World will also keep track of what shapes are currently in it.
-   * NOTE: This is a  private member.
-   */
-  private shapes: Array<Shape> = [];
+  private subscriptionsSet: SubscriptionsSet;
+  private entities = new Set<Entity>();
 
   /**
    * Lights associated with the world.
@@ -48,7 +44,7 @@ export class World {
     // NOTE: arguments to perspective camera are:
     // Field of view, aspect ratio, near and far clipping plane
     this.camera = new THREE.PerspectiveCamera(
-      75,
+      70,
       window.innerWidth / window.innerHeight,
       0.1, 1000,
     );
@@ -63,6 +59,7 @@ export class World {
 
     // Set up the Selector by passing it the scene and camera
     this.selectListener = new SelectListener(this.camera, this.scene);
+    this.subscriptionsSet = new SubscriptionsSet(this.scene, this.selectListener.selector);
   }
 
   // Public methods:
@@ -92,7 +89,10 @@ export class World {
     }
 
     this.entities.delete(entity);
-    entity.onRemove(this);
+    if (entity.onRemove) {
+      entity.onRemove(this);
+    }
+    this.subscriptionsSet.releaseEntitySubscriptions(entity);
   }
 
   hasEntity(entity: Entity) {
@@ -100,13 +100,24 @@ export class World {
   }
 
   /**
-   * Add shape to world:
+   * Adds a threejs object to the world that will be removed when this entity is
    */
-  addShape(shape: Shape) {
-    // First add to scene:
-    this.scene.add(shape.mesh);
-    // Then add to shapes array:
-    this.shapes.push(shape);
+  addObjectForEntity: SubscriptionsSet['addObjectForEntity'] = (entity, object) => {
+    this.subscriptionsSet.addObjectForEntity(entity, object);
+  }
+
+  /**
+   * Adds an observable subscription to the world that will be removed when the entity is
+   */
+  addSubscriptionForEntity: SubscriptionsSet['addSubscriptionForEntity'] = (entity, subscription) => {
+    this.subscriptionsSet.addSubscriptionForEntity(entity, subscription);
+  }
+
+  /**
+   * Adds an object to be checked for selections that will stop checking when the entity is removed
+   */
+  addSelectorObject: SubscriptionsSet['addSelectorObject'] = (entity, object) => {
+    this.subscriptionsSet.addSelectorObject(entity, object);
   }
 
 /*
@@ -128,8 +139,8 @@ export class World {
 
     // Add a wireframe grid helper to the scene:
     // (for debug purposes)
-    const gridHelper = new THREE.GridHelper(150, 150);
-    gridHelper.position.set(0, -2, 0);
+    const gridHelper = new THREE.GridHelper(200, 150);
+    gridHelper.position.set(0, -4, 0);
     this.scene.add(gridHelper);
 
     // Add ambient light:
@@ -144,20 +155,12 @@ export class World {
     this.scene.add(pLight);
 
     // Place the cylinder floor in the world:
-    // (This is a placeholder for the tray that will hold the live loops.)
-    const cylinder = new Cylinder(
-      new THREE.CylinderGeometry(10, 10, 0.5, 32, 32),
-      new THREE.MeshPhongMaterial({ color: 0xffffff, opacity: 0.2, transparent: true }),
-    );
-    cylinder.getMesh().position.set(0, -5, 0);
-    // Add the shape and mesh to their respective arrays:
-    this.shapes.push(cylinder);
-    this.scene.add(cylinder.getMesh());
+    this.addEntity(new TemplateBase());
 
     this.addEntity(new LiveLoopTemplate(templateDefinitions.ambient));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.lead));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.bass));
-    this.addEntity(new LiveLoopTemplate(templateDefinitions.percussive));
+    this.addEntity(new LiveLoopTemplate(templateDefinitions.drums));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.weird));
   }
 

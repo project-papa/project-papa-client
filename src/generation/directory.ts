@@ -1,4 +1,4 @@
-// TODO add liveloops
+// TODO add liveloops and get rid of stubs
 const liveLoops = {
   ambient_piano:
   `sync :metronome_4
@@ -7,6 +7,7 @@ const liveLoops = {
     sp_rate = 1
     s = sample :ambi_piano, cutoff: rrand(70, 130), rate: sp_rate * choose([0.25, 0.5, 0.75, 1]), pan: rrand(-1, 1), pan_slide: sp_time
     control s, pan: rrand(-1, 1)
+    sleep 4
   end`,
   weird_vinyl:
   `sync :metronome_4
@@ -17,6 +18,7 @@ const liveLoops = {
     sample :vinyl_hiss
     sleep 0.5
     sample :vinyl_rewind
+    sleep 4
   end`,
   ambient_hum:
   `sync :metronome_4
@@ -40,17 +42,25 @@ const liveLoops = {
     sample :drum_cymbal_pedal
     sleep 0.25
     sample :drum_cymbal_closed
+    sleep 0.25
   end
   end`,
   drums_chilled_dnb:
   `sync :metronome_4
-  sample :loop_amen,  beat_stretch: 4`,
+  sample :loop_amen,  beat_stretch: 4
+  sleep 4`,
   drums_dance:
   `sync :metronome_2
-  sample :loop_industrial, beat_stretch: 2`,
+  sample :loop_industrial, beat_stretch: 2
+  sleep 2`,
   drums_tabla:
   `sync :metronome_8
-  sample :loop_tabla, beat_stretch: 16`,
+  sample :loop_tabla, beat_stretch: 16
+  sleep 8`,
+  lead_stub:
+  `sleep 1`,
+  bass_stub:
+  `sleep 1`,
 };
 
 export type LiveLoopName = keyof typeof liveLoops;
@@ -74,10 +84,10 @@ const catagories: {
     'weird_vinyl',
   ],
   lead: [
-
+    'lead_stub',
   ],
   bass: [
-
+    'bass_stub',
   ],
 };
 
@@ -125,7 +135,7 @@ const effects = [
 ];
 
 export function getNumberOfEffects() {
-  return this.effects.length;
+  return effects.length;
 }
 
 export function getEffect(i : number) {

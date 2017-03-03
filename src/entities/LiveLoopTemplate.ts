@@ -2,7 +2,7 @@ import { Entity } from './entity';
 import { World } from 'src/world';
 import { Subscription } from 'rxjs';
 import LiveLoopEntity, { LiveLoopEntityDefinition } from './LiveLoopEntity';
-import { LiveLoopName } from 'src/generation/directory';
+import { LiveLoopCatagory } from 'src/generation/directory';
 import * as controls from 'src/controls';
 import * as utils from './utils';
 import THREE = require('three');
@@ -14,17 +14,31 @@ interface LiveLoopTemplateDefinition {
     z: number;
   };
   createGeometry(): THREE.Geometry;
-  getLiveLoopName(): LiveLoopName;
+  getLiveLoopCatagory(): LiveLoopCatagory;
 }
 
-const liveLoopMaterial = new THREE.MeshPhongMaterial({
-  color: 0xaaaaaa,
-  specular: 0x69bccc,
-  shininess: 10,
-  shading: THREE.FlatShading,
-  opacity: 0.8,
-  transparent: true,
-});
+function createLiveLoopMaterial(color: number, opacity: number) {
+  return new THREE.MeshPhongMaterial({
+    color: color,
+    shininess: 1,
+    specular: 0x444488,
+    shading: THREE.FlatShading,
+    opacity: opacity,
+    transparent: true,
+  });
+}
+
+function createBase() {
+  const base = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.2, 0.2, 0.05, 20),
+    new THREE.MeshLambertMaterial({
+      color: 0x444444,
+    }),
+  );
+  base.position.setY(-1.2);
+
+  return base;
+}
 
 /**
  * A LiveLoopTemplate can be selected by the user to create a new live loop
@@ -32,7 +46,7 @@ const liveLoopMaterial = new THREE.MeshPhongMaterial({
  */
 export default class LiveLoopTemplate implements Entity {
   mesh: THREE.Mesh;
-  subscription: Subscription;
+  group: THREE.Group;
   selected: boolean = false;
   definition: LiveLoopTemplateDefinition;
   meshToAdd: THREE.Mesh | null = null;
@@ -40,35 +54,49 @@ export default class LiveLoopTemplate implements Entity {
 
   constructor(definition: LiveLoopTemplateDefinition) {
     this.definition = definition;
-    this.mesh = this.createMesh();
 
-    this.mesh.position.set(
+    this.group = new THREE.Group();
+
+    this.mesh = this.createMesh(0x333333, 1);
+    this.mesh.position.setY(-0.7);
+    this.mesh.scale.set(0.5, 0.5, 0.5);
+    this.group.add(this.mesh);
+    this.group.add(createBase());
+    this.group.position.set(
       definition.position.x,
-      definition.position.y,
+      0,
       definition.position.z,
     );
   }
 
   onAdd(world: World) {
     this.world = world;
-    world.scene.add(this.mesh);
-    this.subscription = new Subscription();
-    this.subscription.add(
+    this.world.addObjectForEntity(this, this.group);
+    this.world.addSelectorObject(this, this.mesh);
+    this.world.addSubscriptionForEntity(
+      this,
       world.selectListener
         .observeSelections(this.mesh)
-        .subscribe(event => this.selected = event.selected),
+        .subscribe(event => {
+          this.selected = event.selected;
+          if (this.selected) {
+            this.mesh.scale.set(0.6, 0.6, 0.6);
+          } else {
+            this.mesh.scale.set(0.5, 0.5, 0.5);
+          }
+        }),
     );
-    this.subscription.add(
+    this.world.addSubscriptionForEntity(
+      this,
       controls.controlEvents
         .filter(controls.eventIs.fist)
         .subscribe(
           controls.listenPose({
             start: () => {
-              console.log('fist');
               if (this.selected) {
                 this.startMeshAdd();
 
-                this.mesh.position.set(
+                this.meshToAdd!.position.set(
                   this.definition.position.x,
                   this.definition.position.y,
                   this.definition.position.z,
@@ -93,29 +121,22 @@ export default class LiveLoopTemplate implements Entity {
     }
   }
 
-  onRemove(world: World) {
-    world.scene.remove(this.mesh);
-    this.subscription.unsubscribe();
-    this.finishMeshAdd(false);
-  }
-
   startMeshAdd() {
-    this.meshToAdd = this.createMesh();
-    console.log(this.meshToAdd === this.mesh);
-    this.world.scene.add(this.meshToAdd);
+    this.meshToAdd = this.createMesh(0xaaaaaa, 0.5);
+    this.world.addObjectForEntity(this, this.meshToAdd);
   }
 
   finishMeshAdd(addLiveLoop = true) {
     if (this.meshToAdd) {
       if (addLiveLoop) {
-        const liveLoopMesh = this.createMesh();
+        const liveLoopMesh = this.createMesh(0xaaaaaa, 1);
         utils.setVectorFromVector(liveLoopMesh.position, this.meshToAdd.position);
 
         this.world.scene.remove(this.meshToAdd);
 
         this.world.addEntity(new LiveLoopEntity({
           mesh: liveLoopMesh,
-          name: this.definition.getLiveLoopName(),
+          type: this.definition.getLiveLoopCatagory(),
         }));
       }
 
@@ -123,10 +144,10 @@ export default class LiveLoopTemplate implements Entity {
     }
   }
 
-  createMesh() {
+  createMesh(color: number, opacity: number) {
     return new THREE.Mesh(
       this.definition.createGeometry(),
-      liveLoopMaterial.clone(),
+      createLiveLoopMaterial(color, opacity),
     );
   }
 }
@@ -140,8 +161,8 @@ const weirdTemplateDefinition: LiveLoopTemplateDefinition = {
   createGeometry() {
     return new THREE.TetrahedronGeometry(0.5);
   },
-  getLiveLoopName() {
-    return 'weird_vinyl';
+  getLiveLoopCatagory() {
+    return 'weird';
   },
 };
 
@@ -152,10 +173,10 @@ const ambientTemplateDefinition: LiveLoopTemplateDefinition = {
     z: -1.5,
   },
   createGeometry() {
-    return new THREE.BoxGeometry(0.5, 0.5, 0.5);
+    return new THREE.BoxGeometry(0.5, 0.5, 0.5).rotateX(Math.PI / 4).rotateZ(Math.PI / 4).rotateY(Math.PI / 4);
   },
-  getLiveLoopName() {
-    return 'weird_vinyl';
+  getLiveLoopCatagory() {
+    return 'ambient';
   },
 };
 
@@ -168,43 +189,43 @@ const leadTemplateDefinition: LiveLoopTemplateDefinition = {
   createGeometry() {
     return new THREE.OctahedronGeometry(0.4, 0);
   },
-  getLiveLoopName() {
-    return 'weird_vinyl';
+  getLiveLoopCatagory() {
+    return 'lead';
   },
 };
 
-const percussiveTemplateDefinition: LiveLoopTemplateDefinition = {
+const drumsTemplateDefinition: LiveLoopTemplateDefinition = {
   position: {
-    x: 1.4,
+    x: 1,
     y: -1,
-    z: -1.4,
+    z: -1,
   },
   createGeometry() {
     return new THREE.IcosahedronGeometry(0.5, 0);
   },
-  getLiveLoopName() {
-    return 'weird_vinyl';
+  getLiveLoopCatagory() {
+    return 'drums';
   },
 };
 
 const bassTemplateDefinition: LiveLoopTemplateDefinition = {
   position: {
-    x: -1.2,
+    x: -1,
     y: -0.7,
-    z: -1.2,
+    z: -1,
   },
   createGeometry() {
     return new THREE.DodecahedronGeometry(0.4, 0);
   },
-  getLiveLoopName() {
-    return 'weird_vinyl';
+  getLiveLoopCatagory() {
+    return 'bass';
   },
 };
 
 export const templateDefinitions = {
   weird: weirdTemplateDefinition,
   bass: bassTemplateDefinition,
-  percussive: percussiveTemplateDefinition,
+  drums: drumsTemplateDefinition,
   lead: leadTemplateDefinition,
   ambient: ambientTemplateDefinition,
 };

@@ -4,11 +4,11 @@ import { Subscription } from 'rxjs';
 import * as controls from 'src/controls';
 import * as utils from './utils';
 import THREE = require('three');
-import { LiveLoopName, getEffect } from 'src/generation/directory';
+import { LiveLoopName, getEffect , LiveLoopCatagory} from 'src/generation/directory';
 import LiveLoop from 'src/generation/LiveLoop';
 
 export interface LiveLoopEntityDefinition {
-  name: LiveLoopName;
+  type: LiveLoopCatagory;
   mesh: THREE.Mesh;
 }
 
@@ -17,31 +17,32 @@ export interface LiveLoopEntityDefinition {
  * The LiveLoopEntity actually plays the live loop.
  */
 export default class LiveLoopEntity implements Entity {
-  name: LiveLoopName;
+  type: LiveLoopCatagory;
   mesh: THREE.Mesh;
   liveloop: LiveLoop;
-  subscription: Subscription;
   selected: boolean = false;
   amplitude: number = 0.5;
   fisted: boolean = false;
   world: World;
 
   constructor(definition: LiveLoopEntityDefinition) {
-    this.name = definition.name;
+    this.type = definition.type;
     this.mesh = definition.mesh;
   }
 
   onAdd(world: World) {
-    world.scene.add(this.mesh);
-    this.liveloop = new LiveLoop(this.name);
-    this.subscription = new Subscription();
-    this.subscription.add(
+    world.addObjectForEntity(this, this.mesh);
+    world.addSelectorObject(this, this.mesh);
+    this.liveloop = new LiveLoop(this.type);
+    world.addSubscriptionForEntity(
+      this,
       world.selectListener
         .observeSelections(this.mesh)
         .subscribe(event => this.selected = event.selected),
     );
-    this.world = world;
-    this.subscription.add(
+
+    world.addSubscriptionForEntity(
+      this,
       controls.controlEvents
         .filter(controls.eventIs.fist)
         .subscribe(controls.listenPose({
@@ -56,7 +57,8 @@ export default class LiveLoopEntity implements Entity {
         })),
     );
 
-    this.subscription.add(
+    world.addSubscriptionForEntity(
+      this,
       controls.controlEvents
         .filter(controls.eventIs.waveIn)
         .subscribe(event => {
@@ -69,7 +71,8 @@ export default class LiveLoopEntity implements Entity {
         }),
     );
 
-    this.subscription.add(
+    world.addSubscriptionForEntity(
+      this,
       controls.controlEvents
         .filter(controls.eventIs.waveOut)
         .subscribe(event => {
@@ -81,18 +84,24 @@ export default class LiveLoopEntity implements Entity {
           }
         }),
     );
+
+    this.world = world;
+
     /**
      * Subscribe to live loop to get oscilloscope data to make LiveLoopEntity
      * pulse with amplitude.
      */
-    this.liveloop.oscilloscopeData().subscribe(
-      amplitude => {
-        const flooredAmplitude = Math.max(amplitude, 0.01);
-        const oldAmp = this.amplitude;
-        const factor = flooredAmplitude / oldAmp;
-        this.mesh.geometry.scale(factor, factor, factor);
-        this.amplitude = flooredAmplitude;
-      },
+    world.addSubscriptionForEntity(
+      this,
+      this.liveloop.oscilloscopeData().subscribe(
+        amplitude => {
+          const flooredAmplitude = Math.max(amplitude, 0.01);
+          const oldAmp = this.amplitude;
+          const factor = flooredAmplitude / oldAmp;
+          this.mesh.geometry.scale(factor, factor, factor);
+          this.amplitude = flooredAmplitude;
+        },
+      ),
     );
   }
 
@@ -103,9 +112,7 @@ export default class LiveLoopEntity implements Entity {
   }
 
   onRemove(world: World) {
-    world.scene.remove(this.mesh);
     this.liveloop.delete();
-    this.subscription.unsubscribe();
   }
 
   applyEffectColour (index :number) {

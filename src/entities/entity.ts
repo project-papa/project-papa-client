@@ -12,7 +12,7 @@ export interface Entity {
   /**
    * Actions to perform when an entity is removed from a particular world
    */
-  onRemove(world: World): void;
+  onRemove?(world: World): void;
 
   /**
    * If present, is called on every update

@@ -13,7 +13,6 @@ export default function createReticle() {
         color: 0xffffff,
         opacity: 0.7,
         transparent: true,
-        depthTest: false,
       }),
     ),
   );
@@ -25,7 +24,6 @@ export default function createReticle() {
         color: 0x111111,
         opacity: 1,
         transparent: true,
-        depthTest: false,
       }),
     ),
   );
