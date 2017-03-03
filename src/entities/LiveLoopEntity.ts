@@ -25,6 +25,9 @@ export default class LiveLoopEntity implements Entity {
   fisted: boolean = false;
   world: World;
 
+  spread : boolean = false;
+  readyToRemove : boolean = false;
+
   constructor(definition: LiveLoopEntityDefinition) {
     this.type = definition.type;
     this.mesh = definition.mesh;
@@ -85,6 +88,17 @@ export default class LiveLoopEntity implements Entity {
         }),
     );
 
+    world.addSubscriptionForEntity(
+      this,
+      controls.controlEvents
+        .filter(controls.eventIs.spread)
+        .subscribe(event => {
+          if (this.selected) {
+            this.spread = true;
+          }
+        }),
+    );
+
     this.world = world;
 
     /**
@@ -108,6 +122,12 @@ export default class LiveLoopEntity implements Entity {
   onUpdate(delta: number) {
     if (this.fisted) {
       utils.projectMeshDistanceFromCamera(this.world.camera, this.mesh, 3);
+    } else if (this.spread) {
+      if (this.mesh.position.y > 1000) {
+        this.world.removeEntity(this);
+      } else {
+        utils.moveMeshUp(delta, 0.0001, this.mesh);
+      }
     }
   }
 
