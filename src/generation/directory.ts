@@ -89,7 +89,7 @@ export function getLoopsOfType(l: LiveLoopCatagory) {
   return catagories[l];
 }
 
-export const effects = [
+const effects = [
   {
     name: 'level',
     parameters: {},

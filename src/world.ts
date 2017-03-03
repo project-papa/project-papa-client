@@ -6,7 +6,7 @@ import SelectListener from 'src/SelectListener';
 import { Entity } from 'src/entities/entity';
 import LiveLoopTemplate, { templateDefinitions } from 'src/entities/LiveLoopTemplate';
 import LiveLoopEntity, { LiveLoopEntityDefinition } from 'src/entities/LiveLoopEntity';
-import { LiveLoopName, effects } from './generation/directory';
+import { LiveLoopName } from './generation/directory';
 import createReticle from './reticle';
 import LiveLoop from 'src/generation/liveloop';
 
@@ -109,6 +109,7 @@ export class World {
     this.shapes.push(shape);
   }
 
+/*
   applyEffect(name: string, shape: Shape) {
     for (const eff of effects) {
       if (eff.name === name) {
@@ -116,6 +117,7 @@ export class World {
       }
     }
   }
+*/
 
   /**
    * Set up the physical environment itself.
