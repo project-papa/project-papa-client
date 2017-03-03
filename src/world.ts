@@ -9,7 +9,7 @@ import TemplateBase from 'src/entities/TemplateBase';
 import { LiveLoopCatagory } from './generation/directory';
 import SubscriptionsSet from './SubscriptionsSet';
 import createReticle from './reticle';
-import LiveLoop from 'src/generation/liveloop';
+import LiveLoop from 'src/generation/LiveLoop';
 
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
