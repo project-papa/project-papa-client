@@ -133,7 +133,7 @@ const effects = [
   {
     name: 'reverb',
     parameters: {
-      room: 0.9,
+      room: 0.99,
     },
     colour: 0xff6600,
   },
@@ -153,7 +153,7 @@ const effects = [
     colour: 0xff00ff,
   },
   {
-    name: 'hpf',
+    name: 'nhpf',
     parameters: {},
     colour: 0xffff00,
   },
