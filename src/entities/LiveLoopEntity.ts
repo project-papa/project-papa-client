@@ -110,7 +110,10 @@ export default class LiveLoopEntity implements Entity {
         .subscribe(event => {
           if (controls.eventIs.fist(event)) {
             this.fisted = true;
-            event.observe().subscribe(() => this.fisted = false);
+            event.observe()
+              .do({
+                complete: () => this.fisted = false,
+              }).subscribe();
           } else if (controls.eventIs.spread(event)) {
             this.kill();
           } else if (controls.eventIs.waveIn(event)) {
