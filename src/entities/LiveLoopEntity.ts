@@ -13,6 +13,19 @@ export interface LiveLoopEntityDefinition {
   mesh: THREE.Mesh;
 }
 
+function createVolumeMesh() {
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.5, 0.05),
+    new THREE.MeshBasicMaterial({
+      color: 0xeeeeee,
+    }),
+  );
+
+  mesh.position.setY(-0.6);
+
+  return mesh;
+}
+
 /**
  * A LiveLoopEntity is made when a LiveLoopTemplate is selected in the world.
  * The LiveLoopEntity actually plays the live loop.
@@ -20,7 +33,9 @@ export interface LiveLoopEntityDefinition {
 export default class LiveLoopEntity implements Entity {
   type: LiveLoopCatagory;
   group: THREE.Group;
+  shapeGroup: THREE.Group;
   coreMesh: THREE.Mesh;
+  volumeMesh: THREE.Mesh;
   outlineMesh: THREE.Mesh;
   liveloop: LiveLoop;
   selected: boolean = false;
@@ -44,18 +59,24 @@ export default class LiveLoopEntity implements Entity {
       }),
     );
 
+    this.volumeMesh = createVolumeMesh();
+
     this.group = new THREE.Group();
-    utils.setVectorFromVector(this.group.position, this.coreMesh.position);
+    this.group.position.copy(this.coreMesh.position);
+    this.shapeGroup = new THREE.Group();
     this.coreMesh.position.set(0, 0, 0);
     this.outlineMesh.position.set(0, 0, 0);
-    this.group.add(this.coreMesh);
-    this.group.add(this.outlineMesh);
+    this.shapeGroup.add(this.coreMesh);
+    this.shapeGroup.add(this.outlineMesh);
+    this.group.add(this.shapeGroup);
+    this.group.add(this.volumeMesh);
   }
 
   onAdd(world: World) {
     world.addObjectForEntity(this, this.group);
     world.addSelectorObject(this, this.coreMesh);
     this.liveloop = new LiveLoop(this.type);
+
     world.addSubscriptionForEntity(
       this,
       world.selectListener
@@ -155,8 +176,14 @@ export default class LiveLoopEntity implements Entity {
     this.amplitude.update(delta);
     const scale = 1.1 + this.amplitude.getValue() * 1.5;
     this.outlineMesh.scale.set(scale, scale, scale);
+    this.volumeMesh.visible = this.selected;
 
-    this.group.rotateY(delta * 0.001);
+    if (this.selected) {
+      this.volumeMesh.quaternion.copy(this.world.camera.quaternion);
+      this.volumeMesh.scale.set(this.liveloop.getVolume(), 1, 1);
+    }
+
+    this.shapeGroup.rotateY(delta * 0.001);
   }
 
   onRemove(world: World) {

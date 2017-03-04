@@ -57,6 +57,12 @@ export default class LiveLoop {
     } else {
       this.volume = v;
     }
+
+    this.generateAndPushRuby();
+  }
+
+  public getVolume() {
+    return this.volume;
   }
 
   public nextEffect() {
