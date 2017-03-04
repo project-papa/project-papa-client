@@ -52,8 +52,8 @@ export default class LiveLoop {
   public setVolume(v: number) {
     if (v < 0) {
       this.volume = 0;
-    } else if (v > 1) {
-      this.volume = 1;
+    } else if (v > 2) {
+      this.volume = 2;
     } else {
       this.volume = v;
     }
