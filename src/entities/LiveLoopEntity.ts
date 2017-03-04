@@ -7,6 +7,7 @@ import THREE = require('three');
 import { getEffect, LiveLoopCatagory } from 'src/generation/directory';
 import LiveLoop from 'src/generation/LiveLoop';
 import { SmoothValue, ExponentialAverage } from '../SmoothValue';
+import * as rxutils from 'src/rxutils';
 
 export interface LiveLoopEntityDefinition {
   type: LiveLoopCatagory;
@@ -76,6 +77,7 @@ export default class LiveLoopEntity implements Entity {
     world.addObjectForEntity(this, this.group);
     world.addSelectorObject(this, this.coreMesh);
     this.liveloop = new LiveLoop(this.type);
+    this.world = world;
 
     world.addSubscriptionForEntity(
       this,
@@ -85,6 +87,16 @@ export default class LiveLoopEntity implements Entity {
           this.selected = event.selected;
           if (this.selected) {
             (this.outlineMesh.material as THREE.MeshPhongMaterial).opacity = 0.6;
+            world.addSubscriptionForEntity(
+              this,
+              controls.orientationEvents
+                .takeWhile(() => this.selected)
+                .map(({ roll }) => roll)
+                .let(rxutils.difference)
+                .subscribe(rotateAmount => {
+                  this.liveloop.setVolume(this.liveloop.getVolume() - rotateAmount);
+                }),
+            );
           } else {
             (this.outlineMesh.material as THREE.MeshPhongMaterial).opacity = 0.2;
           }
@@ -94,40 +106,18 @@ export default class LiveLoopEntity implements Entity {
     world.addSubscriptionForEntity(
       this,
       controls.controlEvents
-        .filter(controls.eventIs.fist)
-        .subscribe(controls.listenPose({
-          start: () => {
-            if (this.selected) {
-              this.fisted = true;
-            }
-          },
-          finish: () => {
-            this.fisted = false;
-          },
-        })),
-    );
-
-    world.addSubscriptionForEntity(
-      this,
-      controls.controlEvents
-        .filter(controls.eventIs.waveIn)
+        .filter(() => this.selected)
         .subscribe(event => {
-          if (this.selected) {
-            // Previous effect
+          if (controls.eventIs.fist(event)) {
+            this.fisted = true;
+            event.observe().subscribe(() => this.fisted = false);
+          } else if (controls.eventIs.spread(event)) {
+            this.kill();
+          } else if (controls.eventIs.waveIn(event)) {
             this.liveloop.prevEffect();
             const currentEffectNum = this.liveloop.getEffectNum();
             this.applyEffectColour(currentEffectNum);
-          }
-        }),
-    );
-
-    world.addSubscriptionForEntity(
-      this,
-      controls.controlEvents
-        .filter(controls.eventIs.waveOut)
-        .subscribe(event => {
-          if (this.selected) {
-            // Add effect
+          } else if (controls.eventIs.waveOut(event)) {
             this.liveloop.nextEffect();
             const currentEffectNum = this.liveloop.getEffectNum();
             this.applyEffectColour(currentEffectNum);
@@ -135,23 +125,7 @@ export default class LiveLoopEntity implements Entity {
         }),
     );
 
-    world.addSubscriptionForEntity(
-      this,
-      controls.controlEvents
-        .filter(controls.eventIs.spread)
-        .subscribe(event => {
-          if (this.selected) {
-            this.kill();
-          }
-        }),
-    );
-
-    this.world = world;
-
-    /**
-     * Subscribe to live loop to get oscilloscope data to make LiveLoopEntity
-     * pulse with amplitude.
-     */
+    // Subscribe to live loop to get oscilloscope data to make LiveLoopEntity pulse with amplitude
     world.addSubscriptionForEntity(
       this,
       this.liveloop.oscilloscopeData().subscribe(
@@ -180,7 +154,7 @@ export default class LiveLoopEntity implements Entity {
 
     if (this.selected) {
       this.volumeMesh.quaternion.copy(this.world.camera.quaternion);
-      this.volumeMesh.scale.set(this.liveloop.getVolume(), 1, 1);
+      this.volumeMesh.scale.set(0.01 + this.liveloop.getVolume() * 0.99, 1, 1);
     }
 
     this.shapeGroup.rotateY(delta * 0.001);

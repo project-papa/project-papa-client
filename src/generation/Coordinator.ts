@@ -1,12 +1,14 @@
 import LiveLoop from './LiveLoop';
 import SonicPiCommunicator from '../pi/SonicPiCommunicator';
 import { getLoopsOfType, LiveLoopCatagory, LiveLoopName } from './directory';
+import { Subject, Observable } from 'rxjs';
 
 export default class Coordinator {
 
   private header: string = '';
   private outputRuby: string;
   private communicator: SonicPiCommunicator = new SonicPiCommunicator();
+  private rubyToSend: Subject<string> = new Subject();
 
   // Define the lists of loop types, and the position in the array
   private catagories: {
@@ -33,6 +35,11 @@ export default class Coordinator {
     this.communicator.sonicPiErrors().subscribe(
       error => console.error('Sonic Pi error!', error.message),
     );
+
+    this.rubyToSend
+      .sample(Observable.interval(500))
+      .distinctUntilChanged()
+      .subscribe(code => this.runRuby(code));
 
     // Add the free scope numbers
     for(let i = 1; i < 128; i++) {
@@ -174,9 +181,13 @@ export default class Coordinator {
       this.deadLoops = new Set<LiveLoop>();
     }
 
+    this.rubyToSend.next(this.outputRuby);
+  }
+
+  private runRuby(code: string) {
     console.log('Running Ruby ======');
-    console.log(this.outputRuby);
-    this.communicator.runCode(this.outputRuby);
+    console.log(code);
+    this.communicator.runCode(code);
   }
 
   public oscilloscopeDataForIndex(scopeNum: number) {

@@ -8,11 +8,18 @@ declare module 'myo' {
     type PoseOffName = 'fingers_spread_off' | 'wave_in_off' | 'wave_out_off' | 'fist_off' | 'double_tap_off';
 
     type EventName = keyof MyoEventArgs;
+    interface MyoQuaternion {
+      x: number;
+      y: number;
+      z: number;
+      w: number;
+    }
 
     interface MyoEventArgs {
       pose: PoseName;
       pose_off: PoseOffName;
       connected: void;
+      orientation: MyoQuaternion;
     }
 
     function connect(name: string): void;

@@ -1,5 +1,6 @@
 import Myo = require('myo');
 import { Observable } from 'rxjs';
+import THREE = require('three');
 
 Myo.connect('com.project-papa.vr');
 Myo.on('connected', () => {
@@ -50,4 +51,20 @@ export function getPoseEnds() {
       },
     };
   }).share();
+}
+
+export function getOrientation() {
+  return new Observable<THREE.Quaternion>(subscriber => {
+    const listener = (quaternion: Myo.MyoQuaternion) => {
+      subscriber.next(new THREE.Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w));
+    };
+
+    Myo.on('orientation', listener);
+
+    return {
+      unsubscribe() {
+        Myo.off('orientation', listener);
+      },
+    };
+  });
 }

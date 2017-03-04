@@ -37,6 +37,6 @@ function keysToRawEvents(keyEvents: Observable<KeyDown | KeyUp>): Observable<con
   });
 }
 
-export default function streamFromElement(element: Node): controller.EventStream {
+export function streamPosesForKeyboard(element: Node): controller.EventStream {
   return controlEvents.controlEventsFromRawEvents(keysToRawEvents(keyboardEvents(element)));
 }
