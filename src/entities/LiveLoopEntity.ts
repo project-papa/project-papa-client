@@ -7,6 +7,7 @@ import THREE = require('three');
 import { getEffect, LiveLoopCatagory } from 'src/generation/directory';
 import LiveLoop from 'src/generation/LiveLoop';
 import { SmoothValue, ExponentialAverage } from '../SmoothValue';
+import { isGrabbedDirectionValid } from './LiveLoopTemplate';
 import * as rxutils from 'src/rxutils';
 
 export interface LiveLoopEntityDefinition {
@@ -113,9 +114,7 @@ export default class LiveLoopEntity implements Entity {
       .takeUntil(this.world.getEntityLifetime(this))
       .filter(() => this.selected)
       .subscribe(event => {
-        if (controls.eventIs.spread(event)) {
-          this.kill();
-        } else if (controls.eventIs.waveIn(event)) {
+        if (controls.eventIs.waveIn(event)) {
           this.liveloop.prevEffect();
           const currentEffectNum = this.liveloop.getEffectNum();
           this.applyEffectColour(currentEffectNum);
@@ -143,10 +142,17 @@ export default class LiveLoopEntity implements Entity {
       },
       onMove: (object, direction) => {
         this.direction = direction;
+        if (!isGrabbedDirectionValid(direction)) {
+          controls.feedback('short');
+        }
       },
       onRelease: (object, direction) => {
         this.depth.updateTarget(5);
         this.direction = direction;
+
+        if (!isGrabbedDirectionValid(direction)) {
+          this.kill();
+        }
       },
     }, this.world.getEntityLifetime(this));
   }

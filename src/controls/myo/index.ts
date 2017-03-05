@@ -1,4 +1,5 @@
-import { Observable } from 'rxjs';
+import Myo = require('myo');
+import { Observable, Subject } from 'rxjs';
 import * as controller from '../controller';
 import * as controlEvents from '../create-control-events';
 import { MyoPoseStart, MyoPoseEnd, getPoseStarts, getPoseEnds, getOrientation } from './myo-events';
@@ -42,3 +43,16 @@ export function streamPosesFromMyo(): controller.EventStream {
 }
 
 export { getOrientation as streamQuaternions };
+
+const vibrations = new Subject<Myo.VibrateLength>();
+vibrations
+  .throttleTime(500)
+  .subscribe(length => {
+    if (Myo.myos.length) {
+      Myo.myos[0].vibrate(length);
+    }
+  });
+
+export function vibrate(length: Myo.VibrateLength) {
+  vibrations.next(length);
+}
