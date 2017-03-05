@@ -1,7 +1,7 @@
 import { Observable } from 'rxjs';
 import * as controller from '../controller';
 import * as controlEvents from '../create-control-events';
-import { MyoPoseStart, MyoPoseEnd, getPoseStarts, getPoseEnds } from './myo-events';
+import { MyoPoseStart, MyoPoseEnd, getPoseStarts, getPoseEnds, getOrientation } from './myo-events';
 
 function myoPoseEvents() {
   return Observable.merge(
@@ -37,6 +37,8 @@ function keysToRawEvents(myoEvents: Observable<MyoPoseStart | MyoPoseEnd>): Obse
   });
 }
 
-export default function streamFromMyo(): controller.EventStream {
+export function streamPosesFromMyo(): controller.EventStream {
   return controlEvents.controlEventsFromRawEvents(keysToRawEvents(myoPoseEvents()));
 }
+
+export { getOrientation as streamQuaternions };

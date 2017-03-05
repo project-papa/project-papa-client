@@ -1,11 +1,14 @@
 import { Observable } from 'rxjs';
 import { EventStream } from './controller';
-import streamKeyboardFromElement from './keyboard';
-import streamMyo from './myo';
+import { streamPosesForKeyboard } from './keyboard';
+import { streamPosesFromMyo, streamQuaternions as streamQuaternionsfromMyo } from './myo';
+import { quaternionsToOrientations } from './orientation';
 
 export const controlEvents: EventStream = Observable.merge(
-  streamKeyboardFromElement(document).share(),
-  streamMyo().share(),
+  streamPosesForKeyboard(document).share(),
+  streamPosesFromMyo().share(),
 );
+
+export const orientationEvents = quaternionsToOrientations(streamQuaternionsfromMyo()).share();
 
 export * from './controller';
