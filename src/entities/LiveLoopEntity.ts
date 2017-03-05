@@ -12,6 +12,8 @@ import * as rxutils from 'src/rxutils';
 export interface LiveLoopEntityDefinition {
   type: LiveLoopCatagory;
   mesh: THREE.Mesh;
+  depth: number;
+  direction: THREE.Vector3;
 }
 
 function createVolumeMesh() {
@@ -43,6 +45,8 @@ export default class LiveLoopEntity implements Entity {
   fisted: boolean = false;
   world: World;
   amplitude: SmoothValue;
+  direction: THREE.Vector3;
+  depth: SmoothValue;
 
   dead : boolean = false;
 
@@ -51,6 +55,8 @@ export default class LiveLoopEntity implements Entity {
     this.amplitude = new ExponentialAverage(0.5, 0);
     this.coreMesh = definition.mesh;
     this.coreMesh.geometry.scale(0.8, 0.8, 0.8);
+    this.direction = definition.direction;
+    this.depth = new ExponentialAverage(0.5, definition.depth);
     this.outlineMesh = new THREE.Mesh(
       (this.coreMesh.geometry.clone() as THREE.Geometry),
       new THREE.MeshBasicMaterial({
@@ -78,79 +84,83 @@ export default class LiveLoopEntity implements Entity {
     world.addSelectorObject(this, this.coreMesh);
     this.liveloop = new LiveLoop(this.type);
     this.world = world;
+    this.depth.updateTarget(5);
 
-    world.addSubscriptionForEntity(
-      this,
-      world.selectListener
-        .observeSelections(this.coreMesh)
-        .subscribe(event => {
-          this.selected = event.selected;
-          if (this.selected) {
-            (this.outlineMesh.material as THREE.MeshPhongMaterial).opacity = 0.6;
-            world.addSubscriptionForEntity(
-              this,
-              controls.orientationEvents
-                .takeWhile(() => this.selected)
-                .map(({ roll }) => roll)
-                .let(rxutils.difference)
-                .subscribe(rotateAmount => {
-                  this.liveloop.setVolume(this.liveloop.getVolume() - rotateAmount);
-                }),
-            );
-          } else {
-            (this.outlineMesh.material as THREE.MeshPhongMaterial).opacity = 0.2;
-          }
-        }),
-    );
+    world.selectListener
+      .observeSelections(this.coreMesh)
+      .takeUntil(this.world.getEntityLifetime(this))
+      .subscribe(event => {
+        this.selected = event.selected;
+        if (this.selected) {
+          (this.outlineMesh.material as THREE.MeshPhongMaterial).opacity = 0.6;
+          controls.orientationEvents
+            .takeUntil(this.world.getEntityLifetime(this))
+            .takeWhile(() => this.selected)
+            .map(({ roll }) => roll)
+            .let(rxutils.difference)
+            .subscribe(rotateAmount => {
+              this.liveloop.setVolume(this.liveloop.getVolume() - rotateAmount);
+            });
+        } else {
+          (this.outlineMesh.material as THREE.MeshPhongMaterial).opacity = 0.2;
+        }
+      });
 
-    world.addSubscriptionForEntity(
-      this,
-      controls.controlEvents
-        .filter(() => this.selected)
-        .subscribe(event => {
-          if (controls.eventIs.fist(event)) {
-            this.fisted = true;
-            event.observe()
-              .do({
-                complete: () => this.fisted = false,
-              }).subscribe();
-          } else if (controls.eventIs.spread(event)) {
-            this.kill();
-          } else if (controls.eventIs.waveIn(event)) {
-            this.liveloop.prevEffect();
-            const currentEffectNum = this.liveloop.getEffectNum();
-            this.applyEffectColour(currentEffectNum);
-          } else if (controls.eventIs.waveOut(event)) {
-            this.liveloop.nextEffect();
-            const currentEffectNum = this.liveloop.getEffectNum();
-            this.applyEffectColour(currentEffectNum);
-          }
-        }),
-    );
+    controls.controlEvents
+      .takeUntil(this.world.getEntityLifetime(this))
+      .filter(() => this.selected)
+      .subscribe(event => {
+        if (controls.eventIs.spread(event)) {
+          this.kill();
+        } else if (controls.eventIs.waveIn(event)) {
+          this.liveloop.prevEffect();
+          const currentEffectNum = this.liveloop.getEffectNum();
+          this.applyEffectColour(currentEffectNum);
+        } else if (controls.eventIs.waveOut(event)) {
+          this.liveloop.nextEffect();
+          const currentEffectNum = this.liveloop.getEffectNum();
+          this.applyEffectColour(currentEffectNum);
+        }
+      });
 
     // Subscribe to live loop to get oscilloscope data to make LiveLoopEntity pulse with amplitude
-    world.addSubscriptionForEntity(
-      this,
-      this.liveloop.oscilloscopeData().subscribe(
+    this.liveloop.oscilloscopeData()
+      .takeUntil(this.world.getEntityLifetime(this))
+      .subscribe(
         amplitude => {
           this.amplitude.updateTarget(amplitude);
         },
-      ),
-    );
+      );
+
+    this.world.grabber.addGrabbable({
+      grabbableObject: this.coreMesh,
+      onGrab: object => {
+        this.depth.updateTarget(4);
+        return this.group;
+      },
+      onMove: (object, direction) => {
+        this.direction = direction;
+      },
+      onRelease: (object, direction) => {
+        this.depth.updateTarget(5);
+        this.direction = direction;
+      },
+    }, this.world.getEntityLifetime(this));
   }
 
   onUpdate(delta: number) {
-    if (this.fisted) {
-      utils.projectObjectDistanceFromCamera(this.world.camera, this.group, 3);
-    } else if (this.dead) {
+    if (this.dead) {
       if (this.group.position.y > 100) {
         this.world.removeEntity(this);
       } else {
         utils.moveObjectUp(delta, 0.01, this.group);
       }
+    } else {
+      this.group.position.copy(this.direction.clone().multiplyScalar(this.depth.getValue()));
     }
 
     this.amplitude.update(delta);
+    this.depth.update(delta);
     const scale = 1.1 + this.amplitude.getValue() * 1.5;
     this.outlineMesh.scale.set(scale, scale, scale);
     this.volumeMesh.visible = this.selected;
