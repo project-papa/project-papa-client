@@ -22,8 +22,8 @@ export default class SubscriptionsSet {
     this.getEntitySubscriptions(entity).addThreeObject(object);
   }
 
-  addSubscriptionForEntity(entity: Entity, subscription: Subscription) {
-    this.getEntitySubscriptions(entity).addObservableSubscription(subscription);
+  getEntityLifetime(entity: Entity) {
+    return this.getEntitySubscriptions(entity).getStop$();
   }
 
   addSelectorObject(entity: Entity, object: THREE.Object3D) {
