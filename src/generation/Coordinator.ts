@@ -156,7 +156,7 @@ export default class Coordinator {
    * Sonic Pi
    */
   public generateRuby() {
-
+    let force = false;
     // Reset the output
     this.outputRuby = '';
 
@@ -170,7 +170,7 @@ export default class Coordinator {
 
     // Stop all killed loops
     if (this.deadLoops.size !== 0) {
-
+      force = true;
       // Add each stop
       for (const loop of this.deadLoops) {
         this.outputRuby = this.outputRuby
@@ -181,7 +181,11 @@ export default class Coordinator {
       this.deadLoops = new Set<LiveLoop>();
     }
 
-    this.rubyToSend.next(this.outputRuby);
+    if (force) {
+      this.runRuby(this.outputRuby);
+    } else {
+      this.rubyToSend.next(this.outputRuby);
+    }
   }
 
   private runRuby(code: string) {

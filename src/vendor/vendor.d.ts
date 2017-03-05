@@ -22,12 +22,19 @@ declare module 'myo' {
       orientation: MyoQuaternion;
     }
 
+    type VibrateLength = 'short' | 'medium' | 'long';
+
+    class MyoInstance {
+      vibrate(length: VibrateLength): void;
+    }
+
     function connect(name: string): void;
     function setLockingPolicy(policy: 'standard' | 'none'): void;
     function on<T extends EventName>(event: T, callback: (data: MyoEventArgs[T]) => void): void;
     function off<T extends EventName>(event: T, callback: (data: MyoEventArgs[T]) => void): void;
     // tslint:disable-next-line:prefer-const
     let onError: (e: any) => void;
+    const myos: MyoInstance[];
   }
 
   export = Myo;

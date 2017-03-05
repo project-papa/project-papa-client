@@ -40,6 +40,10 @@ function createBase() {
   return base;
 }
 
+export function isGrabbedDirectionValid(direction: THREE.Vector3) {
+  return direction.y > -0.4;
+}
+
 /**
  * A LiveLoopTemplate can be selected by the user to create a new live loop
  * in the world.
@@ -94,18 +98,23 @@ export default class LiveLoopTemplate implements Entity {
       },
       onMove: (object, direction) => {
         object.position.copy(direction.multiplyScalar(1.5));
+        if (!isGrabbedDirectionValid(direction)) {
+          controls.feedback('short');
+        }
       },
       onRelease: (object, direction) => {
         const liveLoopMesh = this.createMesh(0xaaaaaa, 1);
 
         this.world.scene.remove(object);
 
-        this.world.addEntity(new LiveLoopEntity({
-          mesh: liveLoopMesh,
-          type: this.definition.getLiveLoopCatagory(),
-          direction: direction,
-          depth: 1.5,
-        }));
+        if (isGrabbedDirectionValid(direction)) {
+          this.world.addEntity(new LiveLoopEntity({
+            mesh: liveLoopMesh,
+            type: this.definition.getLiveLoopCatagory(),
+            direction: direction,
+            depth: 1.5,
+          }));
+        }
       },
     }, this.world.getEntityLifetime(this));
   }
