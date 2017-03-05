@@ -53,10 +53,26 @@ export function getPoseEnds() {
   }).share();
 }
 
+const correctingQuaternion = (new THREE.Quaternion()).setFromAxisAngle(
+  new THREE.Vector3(1, 0, 0),
+  Math.PI / 2,
+);
+
+function myoToThreeQuaternion(quat: Myo.MyoQuaternion): THREE.Quaternion {
+  // This conversion likely isn't the most efficient or most mathematically elegant
+  // But it is easy to understand.
+  const originalQuaternion = new THREE.Quaternion(quat.x, quat.y, quat.z, quat.w);
+  const eulerAngles = (new THREE.Euler()).setFromQuaternion(originalQuaternion);
+  // The Myo gives us rotations in a different co-ordinate space to our world.
+  // The axes are jumbled, so we jumble them back
+  eulerAngles.set(-eulerAngles.y, -eulerAngles.z, -eulerAngles.x);
+  return (new THREE.Quaternion()).setFromEuler(eulerAngles);
+}
+
 export function getOrientation() {
   return new Observable<THREE.Quaternion>(subscriber => {
     const listener = (quaternion: Myo.MyoQuaternion) => {
-      subscriber.next(new THREE.Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w));
+      subscriber.next(myoToThreeQuaternion(quaternion));
     };
 
     Myo.on('orientation', listener);

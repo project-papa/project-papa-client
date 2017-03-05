@@ -1,4 +1,5 @@
 import THREE = require('three');
+import * as controls from 'src/controls';
 
 /**
  * Creates a reticle that we can add to the camera

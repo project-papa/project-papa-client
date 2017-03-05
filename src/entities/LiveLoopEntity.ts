@@ -96,10 +96,13 @@ export default class LiveLoopEntity implements Entity {
           controls.orientationEvents
             .takeUntil(this.world.getEntityLifetime(this))
             .takeWhile(() => this.selected)
-            .map(({ roll }) => roll)
-            .let(rxutils.difference)
+            .map(orientation => (new THREE.Euler()).setFromQuaternion(orientation).z)
+            .let(rxutils.lastTwo)
+            .map(([prev, current]) =>
+              Math.atan2(Math.sin(prev - current), Math.cos(prev - current)),
+            )
             .subscribe(rotateAmount => {
-              this.liveloop.setVolume(this.liveloop.getVolume() - rotateAmount);
+              this.liveloop.setVolume(this.liveloop.getVolume() + rotateAmount);
             });
         } else {
           (this.outlineMesh.material as THREE.MeshPhongMaterial).opacity = 0.2;
