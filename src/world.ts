@@ -183,13 +183,13 @@ export class World {
       }
     }
 
-    let amplitude_sum = 0;
+    let sum = 0;
     for (const entity of this.entities) {
       if ((<LiveLoopEntity>entity).amplitude) {
-        amplitude_sum += (<LiveLoopEntity>entity).amplitude.getTarget();
+        sum += (<LiveLoopEntity>entity).amplitude.getTarget();
       }
     }
-    this.amplitude.setTarget(amplitude_sum);
+    this.amplitude.setTarget(sum);
     this.amplitude.update(delta);
     const red = Math.max(Math.min(1, this.amplitude.getValue()), 0) * 0xff;
     this.scene.background = new THREE.Color((red << 16) + 0x000050);
