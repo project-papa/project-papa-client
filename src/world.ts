@@ -12,7 +12,7 @@ import SubscriptionsSet from './SubscriptionsSet';
 import createReticle from './reticle';
 import LiveLoop from 'src/generation/LiveLoop';
 import { createBrandElement } from './brand';
-import { SmoothValue, ExponentialAverage } from "./SmoothValue";
+import { SmoothValue, ExponentialAverage } from './SmoothValue';
 
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
