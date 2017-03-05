@@ -26,7 +26,7 @@ export default class LiveLoopEntity implements Entity {
   selected: boolean = false;
   fisted: boolean = false;
   world: World;
-  amplitude: SmoothValue;
+  public amplitude: SmoothValue;
 
   dead : boolean = false;
 
@@ -135,7 +135,7 @@ export default class LiveLoopEntity implements Entity {
       this,
       this.liveloop.oscilloscopeData().subscribe(
         amplitude => {
-          this.amplitude.updateTarget(amplitude);
+          this.amplitude.setTarget(amplitude);
         },
       ),
     );

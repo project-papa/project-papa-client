@@ -12,6 +12,7 @@ import SubscriptionsSet from './SubscriptionsSet';
 import createReticle from './reticle';
 import LiveLoop from 'src/generation/LiveLoop';
 import { createBrandElement } from './brand';
+import { SmoothValue, ExponentialAverage } from "./SmoothValue";
 
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
@@ -30,6 +31,7 @@ export class World {
   private subscriptionsSet: SubscriptionsSet;
   private entities = new Set<Entity>();
   private prevTimestamp: number = 0;
+  private amplitude: SmoothValue;
 
   /**
    * Lights associated with the world.
@@ -75,6 +77,8 @@ export class World {
     // Set up the Selector by passing it the scene and camera
     this.selectListener = new SelectListener(this.camera, this.scene);
     this.subscriptionsSet = new SubscriptionsSet(this.scene, this.selectListener.selector);
+
+    this.amplitude = new ExponentialAverage(0.5, 0);
   }
 
   // Public methods:
@@ -178,6 +182,17 @@ export class World {
         entity.onUpdate(delta);
       }
     }
+
+    let amplitude_sum = 0;
+    for (const entity of this.entities) {
+      if ((<LiveLoopEntity>entity).amplitude) {
+        amplitude_sum += (<LiveLoopEntity>entity).amplitude.getTarget();
+      }
+    }
+    this.amplitude.setTarget(amplitude_sum);
+    this.amplitude.update(delta);
+    const red = Math.max(Math.min(1, this.amplitude.getValue()), 0) * 0xff;
+    this.scene.background = new THREE.Color((red << 16) + 0x000050);
   }
 
   /**

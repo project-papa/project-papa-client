@@ -20,14 +20,5 @@ export default class GridEntity implements Entity {
 
   onAdd(world: World) {
     world.addObjectForEntity(this, this.grid);
-    world.addSubscriptionForEntity(
-      this,
-      LiveLoop.globalOscilloscopeData().subscribe(
-        amplitude => {
-          const red = amplitude * 0x0000ff;
-          world.scene.background = new THREE.Color((red << 16) + 0x000050);
-        },
-      ),
-    );
   }
 }
