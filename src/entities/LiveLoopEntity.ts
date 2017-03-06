@@ -48,6 +48,7 @@ export default class LiveLoopEntity implements Entity {
   amplitude: SmoothValue;
   direction: THREE.Vector3;
   depth: SmoothValue;
+  grabbed: boolean = false;
 
   dead : boolean = false;
 
@@ -94,17 +95,6 @@ export default class LiveLoopEntity implements Entity {
         this.selected = event.selected;
         if (this.selected) {
           (this.outlineMesh.material as THREE.MeshPhongMaterial).opacity = 0.6;
-          controls.orientationEvents
-            .takeUntil(this.world.getEntityLifetime(this))
-            .takeWhile(() => this.selected)
-            .map(orientation => (new THREE.Euler()).setFromQuaternion(orientation).z)
-            .let(rxutils.lastTwo)
-            .map(([prev, current]) =>
-              Math.atan2(Math.sin(prev - current), Math.cos(prev - current)),
-            )
-            .subscribe(rotateAmount => {
-              this.liveloop.setVolume(this.liveloop.getVolume() + rotateAmount);
-            });
         } else {
           (this.outlineMesh.material as THREE.MeshPhongMaterial).opacity = 0.2;
         }
@@ -137,7 +127,19 @@ export default class LiveLoopEntity implements Entity {
     this.world.grabber.addGrabbable({
       grabbableObject: this.coreMesh,
       onGrab: object => {
-        this.depth.setTarget(4);
+        this.depth.setTarget(3);
+        this.grabbed = true;
+        controls.orientationEvents
+          .takeUntil(this.world.getEntityLifetime(this))
+          .takeWhile(() => this.grabbed)
+          .map(orientation => (new THREE.Euler()).setFromQuaternion(orientation).z)
+          .let(rxutils.lastTwo)
+          .map(([prev, current]) =>
+            -Math.atan2(Math.sin(prev - current), Math.cos(prev - current)),
+          )
+          .subscribe(rotateAmount => {
+            this.liveloop.setVolume(this.liveloop.getVolume() + rotateAmount);
+          });
         return this.group;
       },
       onMove: (object, direction) => {
@@ -149,6 +151,7 @@ export default class LiveLoopEntity implements Entity {
       onRelease: (object, direction) => {
         this.depth.setTarget(5);
         this.direction = direction;
+        this.grabbed = false;
 
         if (!isGrabbedDirectionValid(direction)) {
           this.kill();
