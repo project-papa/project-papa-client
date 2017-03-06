@@ -1,6 +1,7 @@
 export interface SmoothValue {
-  getValue() : number;
-  updateTarget(val: number): void;
+  getValue(): number;
+  getTarget(): number;
+  setTarget(val: number): void;
   update(delta: number): void;
   reset(): void;
 }
@@ -20,7 +21,11 @@ export class ExponentialAverage implements SmoothValue {
     return this.value;
   }
 
-  updateTarget(val: number) {
+  getTarget() {
+    return this.target;
+  }
+
+  setTarget(val: number) {
     this.target = val;
   }
 

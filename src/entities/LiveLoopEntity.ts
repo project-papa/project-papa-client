@@ -85,7 +85,7 @@ export default class LiveLoopEntity implements Entity {
     world.addSelectorObject(this, this.coreMesh);
     this.liveloop = new LiveLoop(this.type);
     this.world = world;
-    this.depth.updateTarget(5);
+    this.depth.setTarget(5);
 
     world.selectListener
       .observeSelections(this.coreMesh)
@@ -130,14 +130,14 @@ export default class LiveLoopEntity implements Entity {
       .takeUntil(this.world.getEntityLifetime(this))
       .subscribe(
         amplitude => {
-          this.amplitude.updateTarget(amplitude);
+          this.amplitude.setTarget(amplitude);
         },
       );
 
     this.world.grabber.addGrabbable({
       grabbableObject: this.coreMesh,
       onGrab: object => {
-        this.depth.updateTarget(4);
+        this.depth.setTarget(4);
         return this.group;
       },
       onMove: (object, direction) => {
@@ -147,7 +147,7 @@ export default class LiveLoopEntity implements Entity {
         }
       },
       onRelease: (object, direction) => {
-        this.depth.updateTarget(5);
+        this.depth.setTarget(5);
         this.direction = direction;
 
         if (!isGrabbedDirectionValid(direction)) {
