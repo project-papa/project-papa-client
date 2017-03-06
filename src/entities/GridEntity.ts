@@ -14,19 +14,11 @@ export default class GridEntity implements Entity {
   grid: THREE.GridHelper;
 
   constructor() {
-    this.grid = new THREE.GridHelper(200, 150);
+    this.grid = new THREE.GridHelper(180, 100, 0xcccccc, 0xcccccc);
     this.grid.position.set(0, -4, 0);
   }
 
   onAdd(world: World) {
     world.addObjectForEntity(this, this.grid);
-    LiveLoop.globalOscilloscopeData()
-      .takeUntil(world.getEntityLifetime(this))
-      .subscribe(
-        amplitude => {
-          const red = amplitude * 0x0000ff;
-          world.scene.background = new THREE.Color((red << 16) + 0x000050);
-        },
-      );
   }
 }
