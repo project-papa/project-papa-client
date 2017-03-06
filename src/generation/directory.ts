@@ -73,6 +73,12 @@ const liveLoops = {
       end
     end
   end`,
+  lead_bleeps:
+  `sync :metronome_2
+  8.times do
+    play scale(:Eb2, :major_pentatonic, num_octaves: 3).choose, release: 0.1, amp: rand
+    sleep 0.25
+  end`,
   bass_stub:
   `sleep 1`,
   weird_space_scanner:
@@ -110,6 +116,7 @@ const catagories: {[P in LiveLoopCatagory]: LiveLoopName[]; } = {
   ],
   lead: [
     'lead_squelch',
+    'lead_bleeps',
   ],
   bass: [
     'bass_stub',
