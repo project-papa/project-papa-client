@@ -188,9 +188,9 @@ export default class Coordinator {
 
     if (force) {
       this.runRuby(this.outputRuby);
-    } else {
-      this.rubyToSend.next(this.outputRuby);
     }
+
+    this.rubyToSend.next(this.outputRuby);
   }
 
   private runRuby(code: string) {
