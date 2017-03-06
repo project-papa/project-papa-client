@@ -34,13 +34,7 @@ export class World {
   private prevTimestamp: number = 0;
   private amplitude: SmoothValue;
   readonly grabber: Grabber;
-
-  /**
-   * Lights associated with the world.
-   * NOTE: We simply use three's implementations of lights as
-   * we need not carry around any additional information (yet).
-   */
-  private lights: Array<THREE.Light> = [];
+  private ambientLight: THREE.Light;
 
   readonly selectListener: SelectListener;
 
@@ -151,13 +145,14 @@ export class World {
   setupEnvironment() {
     // Set a background colour:
     this.scene.background = new THREE.Color(0x0d0d0d);
+    this.scene.fog = new THREE.FogExp2(0x0d0d0d, 0.035);
 
     // Add a wireframe grid helper to the scene:
     this.addEntity(new GridEntity());
 
     // Add ambient light:
     const ambientLight = new THREE.AmbientLight(0x808080);
-    this.lights.push(ambientLight);
+    this.ambientLight = ambientLight;
     this.scene.add(ambientLight);
 
     // Place the cylinder floor in the world:
@@ -179,8 +174,11 @@ export class World {
     light.shadowMapHeight = 1024;
     light.position.set(0, 50, 0);
     light.target = base.mesh!;
-    this.lights.push(light);
     this.scene.add(light);
+
+    const middleLight = new THREE.PointLight(0xaaaaaa, 2, 10);
+    middleLight.position.y = 3;
+    this.scene.add(middleLight);
   }
 
   /**
@@ -206,7 +204,9 @@ export class World {
     this.amplitude.setTarget(sum);
     this.amplitude.update(delta);
     const red = Math.max(Math.min(1, this.amplitude.getValue()), 0) * 0xff;
-    this.scene.background = new THREE.Color((red << 16) + 0x000050);
+    this.scene.background = new THREE.Color((red << 16) + 0x101040);
+    this.scene.fog.color = this.scene.background;
+    this.ambientLight.color = this.scene.fog.color;
   }
 
   /**
