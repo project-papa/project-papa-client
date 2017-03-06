@@ -13,6 +13,7 @@ import createReticle from './reticle';
 import LiveLoop from 'src/generation/LiveLoop';
 import { createBrandElement } from './brand';
 import { SmoothValue, ExponentialAverage } from './SmoothValue';
+import Grabber, { Grabbable } from 'src/Grabber';
 
 import VrEnvironment from './VrEnvironment';
 import window from 'src/window';
@@ -32,6 +33,7 @@ export class World {
   private entities = new Set<Entity>();
   private prevTimestamp: number = 0;
   private amplitude: SmoothValue;
+  readonly grabber: Grabber;
 
   /**
    * Lights associated with the world.
@@ -77,8 +79,8 @@ export class World {
     // Set up the Selector by passing it the scene and camera
     this.selectListener = new SelectListener(this.camera, this.scene);
     this.subscriptionsSet = new SubscriptionsSet(this.scene, this.selectListener.selector);
-
     this.amplitude = new ExponentialAverage(0.5, 0);
+    this.grabber = new Grabber(this.selectListener, this.camera);
   }
 
   // Public methods:
@@ -126,10 +128,10 @@ export class World {
   }
 
   /**
-   * Adds an observable subscription to the world that will be removed when the entity is
+   * Gets an observable that will emit one element when the entity is removed
    */
-  addSubscriptionForEntity: SubscriptionsSet['addSubscriptionForEntity'] = (entity, subscription) => {
-    this.subscriptionsSet.addSubscriptionForEntity(entity, subscription);
+  getEntityLifetime: SubscriptionsSet['getEntityLifetime'] = entity => {
+    return this.subscriptionsSet.getEntityLifetime(entity);
   }
 
   /**
@@ -177,6 +179,7 @@ export class World {
     const delta = timestamp - this.prevTimestamp;
     this.prevTimestamp = timestamp;
     this.selectListener.update();
+    this.grabber.update();
     for (const entity of this.entities) {
       if (entity.onUpdate) {
         entity.onUpdate(delta);

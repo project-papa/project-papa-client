@@ -1,5 +1,5 @@
 import THREE = require('three');
-import { Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
 import { Entity } from 'src/entities/entity';
 import { Selector } from 'src/selector';
 
@@ -8,7 +8,7 @@ import { Selector } from 'src/selector';
  */
 export default class Subscriptions {
   private scene: THREE.Scene;
-  private observableSubscription: Subscription = new Subscription();
+  private stop$ = new Subject<Object>();
   private threeObjects: THREE.Object3D[] = [];
   private selectableObjects: THREE.Object3D[] = [];
   private selector: Selector;
@@ -23,8 +23,8 @@ export default class Subscriptions {
     this.threeObjects.push(object);
   }
 
-  addObservableSubscription(subscription: Subscription) {
-    this.observableSubscription.add(subscription);
+  getStop$() {
+    return this.stop$.asObservable();
   }
 
   addSelectorObject(object: THREE.Object3D) {
@@ -33,7 +33,6 @@ export default class Subscriptions {
   }
 
   release() {
-    this.observableSubscription.unsubscribe();
     for (const threeObject of this.threeObjects) {
       this.scene.remove(threeObject);
     }
@@ -42,6 +41,8 @@ export default class Subscriptions {
     }
     this.threeObjects = [];
     this.selectableObjects = [];
-    this.observableSubscription = new Subscription();
+    this.stop$.next({ });
+    this.stop$.complete();
+    this.stop$ = new Subject();
   }
 }

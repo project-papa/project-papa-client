@@ -40,6 +40,10 @@ function createBase() {
   return base;
 }
 
+export function isGrabbedDirectionValid(direction: THREE.Vector3) {
+  return direction.y > -0.4;
+}
+
 /**
  * A LiveLoopTemplate can be selected by the user to create a new live loop
  * in the world.
@@ -73,80 +77,54 @@ export default class LiveLoopTemplate implements Entity {
     this.world = world;
     this.world.addObjectForEntity(this, this.group);
     this.world.addSelectorObject(this, this.mesh);
-    this.world.addSubscriptionForEntity(
-      this,
-      world.selectListener
-        .observeSelections(this.mesh)
-        .subscribe(event => {
-          this.selected = event.selected;
-          if (this.selected) {
-            this.mesh.scale.set(0.6, 0.6, 0.6);
-          } else {
-            this.mesh.scale.set(0.5, 0.5, 0.5);
-          }
-        }),
-    );
-    this.world.addSubscriptionForEntity(
-      this,
-      controls.controlEvents
-        .filter(controls.eventIs.fist)
-        .subscribe(
-          controls.listenPose({
-            start: () => {
-              if (this.selected) {
-                this.startMeshAdd();
+    world.selectListener
+      .observeSelections(this.mesh)
+      .takeUntil(this.world.getEntityLifetime(this))
+      .subscribe(event => {
+        this.selected = event.selected;
+        if (this.selected) {
+          this.mesh.scale.set(0.6, 0.6, 0.6);
+        } else {
+          this.mesh.scale.set(0.5, 0.5, 0.5);
+        }
+      });
 
-                this.meshToAdd!.position.set(
-                  this.definition.position.x,
-                  this.definition.position.y,
-                  this.definition.position.z,
-                );
-              }
-            },
-            finish: () => {
-              this.finishMeshAdd();
-            },
-          }),
-        ),
-    );
+    this.world.grabber.addGrabbable({
+      grabbableObject: this.mesh,
+      onGrab: object => {
+        const mesh = this.createMesh(0xaaaaaa, 0.5);
+        this.world.addObjectForEntity(this, mesh);
+        return mesh;
+      },
+      onMove: (object, direction) => {
+        object.position.copy(direction.multiplyScalar(1.5));
+        if (!isGrabbedDirectionValid(direction)) {
+          controls.feedback('short');
+        }
+      },
+      onRelease: (object, direction) => {
+        const liveLoopMesh = this.createMesh(0xaaaaaa, 1);
+
+        this.world.scene.remove(object);
+
+        if (isGrabbedDirectionValid(direction)) {
+          this.world.addEntity(new LiveLoopEntity({
+            mesh: liveLoopMesh,
+            type: this.definition.getLiveLoopCatagory(),
+            direction: direction,
+            depth: 1.5,
+          }));
+        }
+      },
+    }, this.world.getEntityLifetime(this));
   }
 
   onUpdate(delta: number) {
-    if (this.meshToAdd) {
-      utils.projectObjectDistanceFromCamera(
-        this.world.camera,
-        this.meshToAdd,
-        3,
-      );
-    }
     if (this.selected) {
       this.mesh.rotateY(delta * 0.00025);
       (this.mesh.material as THREE.MeshPhongMaterial).opacity = 1;
     } else {
       (this.mesh.material as THREE.MeshPhongMaterial).opacity = 0.8;
-    }
-  }
-
-  startMeshAdd() {
-    this.meshToAdd = this.createMesh(0xaaaaaa, 0.5);
-    this.world.addObjectForEntity(this, this.meshToAdd);
-  }
-
-  finishMeshAdd(addLiveLoop = true) {
-    if (this.meshToAdd) {
-      if (addLiveLoop) {
-        const liveLoopMesh = this.createMesh(0xaaaaaa, 1);
-        utils.setVectorFromVector(liveLoopMesh.position, this.meshToAdd.position);
-
-        this.world.scene.remove(this.meshToAdd);
-
-        this.world.addEntity(new LiveLoopEntity({
-          mesh: liveLoopMesh,
-          type: this.definition.getLiveLoopCatagory(),
-        }));
-      }
-
-      this.meshToAdd = null;
     }
   }
 
