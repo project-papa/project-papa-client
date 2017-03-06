@@ -30,18 +30,34 @@ function createLiveLoopMaterial(color: number, opacity: number) {
 
 function createBase() {
   const base = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.15, 0.15, 0.001, 20),
+    new THREE.CylinderGeometry(0.15, 0.15, 0.1, 20),
     new THREE.MeshLambertMaterial({
-      color: 0x111111,
+      color: 0x333333,
     }),
   );
   base.position.setY(-1.2);
-
+  base.castShadow = true;
+  base.receiveShadow = true;
   return base;
 }
 
+function createSpotLight(mesh: THREE.Mesh) {
+  const spotLight = new THREE.SpotLight(0x808080, 0.3);
+
+  spotLight.castShadow = true;
+  spotLight.shadowCameraFov = Math.PI;
+  spotLight.shadowBias = 0.0001;
+  spotLight.shadowMapWidth = 2048;
+  spotLight.shadowMapHeight = 2048;
+
+  spotLight.position.set(0, 0.6, 0);
+  spotLight.target = mesh;
+
+  return spotLight;
+}
+
 export function isGrabbedDirectionValid(direction: THREE.Vector3) {
-  return direction.y > -0.4;
+  return direction.y > -0.2;
 }
 
 /**
@@ -66,6 +82,7 @@ export default class LiveLoopTemplate implements Entity {
     this.mesh.scale.set(0.5, 0.5, 0.5);
     this.group.add(this.mesh);
     this.group.add(createBase());
+    this.group.add(createSpotLight(this.mesh));
     this.group.position.set(
       definition.position.x,
       0,
@@ -129,10 +146,13 @@ export default class LiveLoopTemplate implements Entity {
   }
 
   createMesh(color: number, opacity: number) {
-    return new THREE.Mesh(
+    const mesh = new THREE.Mesh(
       this.definition.createGeometry(),
       createLiveLoopMaterial(color, opacity),
     );
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    return mesh;
   }
 }
 

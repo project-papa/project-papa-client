@@ -58,7 +58,12 @@ export default class Coordinator {
     `use_bpm 128
     use_external_synths true
 
+    live_loop :metronome_1 do
+      sleep 1
+    end
+
     live_loop :metronome_2 do
+      sync :metronome_1
       sleep 2
     end
 

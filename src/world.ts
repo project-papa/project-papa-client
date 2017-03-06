@@ -68,6 +68,10 @@ export class World {
     this.renderer.domElement.style.bottom = '0';
     this.renderer.domElement.style.top = '0';
 
+    // Setup renderer for casting of shadows
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
@@ -153,20 +157,27 @@ export class World {
     this.lights.push(ambientLight);
     this.scene.add(ambientLight);
 
-    // Add a point light:
-    const pLight = new THREE.PointLight(0xffffff, 7, 10, 2);
-    pLight.position.set(0, 5, 0);
-    this.lights.push(pLight);
-    this.scene.add(pLight);
-
     // Place the cylinder floor in the world:
-    this.addEntity(new TemplateBase());
+    const base = new TemplateBase();
+    this.addEntity(base);
 
     this.addEntity(new LiveLoopTemplate(templateDefinitions.ambient));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.lead));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.bass));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.drums));
     this.addEntity(new LiveLoopTemplate(templateDefinitions.weird));
+
+    // Add a directional light above the base:
+    const light = new THREE.SpotLight(0x808080, 0.2);
+    light.castShadow = true;
+    light.shadowCameraFov = this.camera.fov;
+    light.shadowBias = 0.0001;
+    light.shadowMapHeight = 1024;
+    light.shadowMapHeight = 1024;
+    light.position.set(0, 50, 0);
+    light.target = base.mesh!;
+    this.lights.push(light);
+    this.scene.add(light);
   }
 
   /**
