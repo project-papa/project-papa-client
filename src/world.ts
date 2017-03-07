@@ -203,7 +203,7 @@ export class World {
     }
     this.amplitude.setTarget(sum);
     this.amplitude.update(delta);
-    const red = Math.max(Math.min(1, this.amplitude.getValue()), 0) * 0xff;
+    const red = Math.max(Math.min(Math.min(this.amplitude.getValue()) ** 2, 1) / 2, 0) * 0xff;
     this.scene.background = new THREE.Color((red << 16) + 0x101040);
     this.scene.fog.color = this.scene.background;
     this.ambientLight.color = this.scene.fog.color;
