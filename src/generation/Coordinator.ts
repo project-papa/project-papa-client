@@ -14,11 +14,11 @@ export default class Coordinator {
   private catagories: {
     [P in LiveLoopCatagory]: LiveLoopName[];
   } = {
-    drums: getLoopsOfType('drums'),
-    ambient: getLoopsOfType('ambient'),
-    lead: getLoopsOfType('lead'),
-    bass: getLoopsOfType('bass'),
-    weird: getLoopsOfType('weird'),
+    drums: shuffle(getLoopsOfType('drums')),
+    ambient: shuffle(getLoopsOfType('ambient')),
+    lead: shuffle(getLoopsOfType('lead')),
+    bass: shuffle(getLoopsOfType('bass')),
+    weird: shuffle(getLoopsOfType('weird')),
   };
 
   // Store the free number slots
@@ -45,13 +45,6 @@ export default class Coordinator {
     for(let i = 1; i < 128; i++) {
       this.freeScopeNums.push(i);
     }
-
-    // Randomise the loops order
-    this.catagories.drums.sort((a, b) => { return 0.5 - Math.random(); } );
-    this.catagories.ambient.sort((a, b) => { return 0.5 - Math.random(); } );
-    this.catagories.weird.sort((a, b) => { return 0.5 - Math.random(); } );
-    this.catagories.lead.sort((a, b) => { return 0.5 - Math.random(); } );
-    this.catagories.bass.sort((a, b) => { return 0.5 - Math.random(); } );
 
     // Define the header timing information
     this.header =
@@ -221,4 +214,18 @@ export default class Coordinator {
     this.communicator.subscribeToOscilloscopes([...this.usedScopeNums]);
   }
 
+}
+
+/**
+ * Return a shuffled version of the original array
+ */
+function shuffle<T>(array: T[]): T[] {
+  const newArray: T[] = [];
+  const indices = array.map((v, index) => index);
+
+  while (indices.length > 0) {
+    newArray.push(array[indices.splice(Math.floor(Math.random() * indices.length), 1)[0]]);
+  }
+
+  return newArray;
 }
