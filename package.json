@@ -25,7 +25,7 @@
     "myo": "^3.0.0",
     "rxjs": "^5.2.0",
     "testdouble": "^1.11.1",
-    "three": "^0.84.0",
+    "three": "^0.125.0",
     "three-vreffect": "^1.0.0",
     "ts-jest": "^18.0.2",
     "ts-loader": "^2.0.0",

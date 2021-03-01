@@ -3674,9 +3674,9 @@ three-vreffect:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/three-vreffect/-/three-vreffect-1.0.0.tgz#3a6fc312d07649e2f06c158d831ef73b00954ffc"
 
-three@^0.84.0:
-  version "0.84.0"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.84.0.tgz#95be85a55a0fa002aa625ed559130957dcffd918"
+three@^0.125.0:
+  version "0.125.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.125.0.tgz#19e922b9dc51ad0b706893aeee888de68e99850a"
 
 throat@^3.0.0:
   version "3.0.0"
